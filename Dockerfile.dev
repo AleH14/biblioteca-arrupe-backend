@@ -10,8 +10,7 @@ COPY package*.json ./
 # Install all dependencies (including dev dependencies)
 RUN npm install
 
-# Copy source code
-COPY src/ ./src/
+# DON'T COPY source code - it will be mounted via volume
 
 # Expose port
 EXPOSE 4000
