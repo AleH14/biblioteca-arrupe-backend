@@ -17,21 +17,21 @@ describe("Modelo Usuario", () => {
   });
 
   it("no debe permitir emails duplicados", async () => {
-    expect.assertions(1);
+    // Asegurar que los índices estén creados
+    await Usuario.ensureIndexes();
+    
+    // Crear el primer usuario
     await Usuario.create({
       nombre: "Usuario 1",
       email: "test@example.com",
       password: "123456"
     });
 
-    try {
-      await Usuario.create({
-        nombre: "Usuario 2",
-        email: "test@example.com",
-        password: "abcdef"
-      });
-    } catch (err) {
-      expect(err).toBeDefined();
-    }
+    // Intentar crear un segundo usuario con el mismo email debe fallar
+    await expect(Usuario.create({
+      nombre: "Usuario 2",
+      email: "test@example.com",
+      password: "abcdef"
+    })).rejects.toThrow();
   });
 });

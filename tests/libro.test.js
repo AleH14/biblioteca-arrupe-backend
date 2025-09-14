@@ -39,7 +39,7 @@ describe("Modelo Libro", () => {
 
   it("debe permitir agregar nuevos ejemplares a un libro existente", async () => {
     // 1. Crear un libro con un ejemplar inicial
-    let libro = await Libro.create({
+    const libroCreado = await Libro.create({
       autor: "Autor de prueba",
       categoria: { descripcion: "Ciencia" },
       editorial: "Editorial X",
@@ -51,22 +51,24 @@ describe("Modelo Libro", () => {
       titulo: "Libro de prueba"
     });
 
-    expect(libro.ejemplares.length).toBe(1);
+    expect(libroCreado.ejemplares.length).toBe(1);
 
-    // 2. Recuperar el libro
-    libro = await Libro.findById(libro._id);
+    // 2. Usar findByIdAndUpdate para agregar el nuevo ejemplar de forma atómica
+    const libroActualizado = await Libro.findByIdAndUpdate(
+      libroCreado._id,
+      {
+        $push: {
+          ejemplares: {
+            cdu: "QA101",
+            estado: "disponible",
+            ubicacionFisica: "Estante 2"
+          }
+        }
+      },
+      { new: true } // Retorna el documento actualizado
+    );
 
-    // 3. Agregar un nuevo ejemplar
-    libro.ejemplares.push({
-      cdu: "QA101",
-      estado: "disponible",
-      ubicacionFisica: "Estante 2"
-    });
-
-    await libro.save();
-
-    // 4. Verificar que ahora tiene 2 ejemplares
-    const libroActualizado = await Libro.findById(libro._id);
+    // 3. Verificar que ahora tiene 2 ejemplares
     expect(libroActualizado.ejemplares.length).toBe(2);
     expect(libroActualizado.ejemplares[1].cdu).toBe("QA101");
   });

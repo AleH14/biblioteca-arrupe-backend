@@ -6,6 +6,12 @@ beforeAll(async () => {
   // Usamos una DB específica para test - usar mongo:27017 para contenedor
   const uri = process.env.MONGO_URI_TEST || "mongodb://mongo:27017/biblioteca_arrupe_test";
   await mongoose.connect(uri);
+  
+  // Asegurar que los índices se creen
+  const models = mongoose.modelNames();
+  for (const modelName of models) {
+    await mongoose.model(modelName).ensureIndexes();
+  }
 }, 10000); // Aumentar timeout a 10 segundos
 
 afterEach(async () => {
