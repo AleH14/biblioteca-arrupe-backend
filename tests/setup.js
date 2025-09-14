@@ -3,13 +3,10 @@ require("dotenv").config();
 
 beforeAll(async () => {
   console.log("Conectando a la base de datos de test...");
-  // Usamos una DB específica para test
-  const uri = process.env.MONGO_URI_TEST || "mongodb://localhost:27017/biblioteca_arrupe_test";
-  await mongoose.connect(uri, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true
-  });
-});
+  // Usamos una DB específica para test - usar mongo:27017 para contenedor
+  const uri = process.env.MONGO_URI_TEST || "mongodb://mongo:27017/biblioteca_arrupe_test";
+  await mongoose.connect(uri);
+}, 10000); // Aumentar timeout a 10 segundos
 
 afterEach(async () => {
   // Limpiar colecciones después de cada test
