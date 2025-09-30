@@ -1,13 +1,12 @@
 require('dotenv').config();
 const express = require('express');
-const connectDB = require('./config/db');
 const app = express();
+const authRoutes = require('./routes/auth');
 
-// Conectar a la base de datos
-connectDB();
 
 // Middleware
 app.use(express.json());
+
 
 // Health check endpoint
 app.get('/health', (req, res) => {
@@ -19,5 +18,8 @@ app.get('/health', (req, res) => {
 });
 
 // Your other routes here...
+
+// Montar rutas
+app.use('/api/auth', authRoutes);
 
 module.exports = app;

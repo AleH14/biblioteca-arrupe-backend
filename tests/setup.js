@@ -4,7 +4,7 @@ require("dotenv").config();
 beforeAll(async () => {
   console.log("Conectando a la base de datos de test...");
   // Usamos una DB específica para test - usar mongo:27017 para contenedor
-  const uri = process.env.MONGO_URI_TEST || "mongodb://mongo:27017/biblioteca_arrupe_test";
+  const uri = process.env.MONGO_URI_TEST;
   await mongoose.connect(uri);
   
   // Asegurar que los índices se creen
