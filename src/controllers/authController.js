@@ -36,6 +36,10 @@ exports.login = async (req, res) => {
       rol: usuario.rol
     };
 
+    if (!JWT_SECRET) {
+      // No permitir firmar tokens sin secreto
+      return res.status(500).json({ message: "JWT_SECRET no está configurado en el entorno del servidor" });
+    }
     const token = jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
 
     // Respuesta: token + información básica (sin campos sensibles)
