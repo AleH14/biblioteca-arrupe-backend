@@ -1,6 +1,6 @@
-const Prestamo = require("../src/models/Prestamo");
-const Usuario = require("../src/models/Usuario");
-const Libro = require("../src/models/Libro");
+const Prestamo = require("../src/modules/prestamos/prestamo.model");
+const Usuario = require("../src/modules/usuarios/usuario.model");
+const Libro = require("../src/modules/libros/libro.model");
 
 describe("Modelo Prestamo", () => {
   it("debe crear un préstamo válido con notificación", async () => {

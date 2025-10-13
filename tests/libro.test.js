@@ -1,4 +1,4 @@
-const Libro = require("../src/models/Libro");
+const Libro = require("../src/modules/libros/libro.model");
 
 describe("Modelo Libro", () => {
   it("debe crear un libro con ejemplares", async () => {

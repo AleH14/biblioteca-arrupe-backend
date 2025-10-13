@@ -2,10 +2,10 @@
   "name": "biblioteca-arrupe-backend",
   "version": "1.0.0",
   "description": "API de gestión (backend) para la biblioteca digital del Colegio Arrupe. Maneja la lógica del negocio, la base de datos de libros y la autenticación, proporcionando los datos necesarios para la aplicación web.",
-  "main": "src/server.js",
+  "main": "src/config/server.js",
   "scripts": {
-    "start": "node src/server.js",
-    "dev": "nodemon src/server.js",
+    "start": "node src/config/server.js",
+    "dev": "nodemon src/config/server.js",
     "test": "jest"
   },
   "keywords": [],

@@ -1,7 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const app = express();
-const authRoutes = require('./routes/auth');
+const auth = require('../modules/auth');
 
 
 // Middleware
@@ -17,9 +17,7 @@ app.get('/health', (req, res) => {
   });
 });
 
-// Your other routes here...
-
 // Montar rutas
-app.use('/api/auth', authRoutes);
+app.use('/api/auth', auth.routes);
 
 module.exports = app;

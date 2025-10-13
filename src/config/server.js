@@ -1,5 +1,5 @@
 const app = require('./app');
-const connectDB = require('./config/db');
+const connectDB = require('./db');
 const PORT = process.env.PORT || 4000;
 
 // Conectar a la base de datos
