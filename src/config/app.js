@@ -24,4 +24,15 @@ app.get('/health', (req, res) => {
 app.use('/api/auth', auth.routes);
 app.use('/api/libros', libros.routes);
 
+// Middleware global de manejo de errores
+app.use((err, req, res, next) => {
+  logger.error(`${req.method} ${req.originalUrl} - ${err.message}`, { stack: err.stack });
+  res.status(err.status || 500).json({
+    status: err.status || 500,
+    message: err.message || 'Error del servidor',
+    timestamp: new Date().toISOString()
+  });
+});
+
+
 module.exports = app;

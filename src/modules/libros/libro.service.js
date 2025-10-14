@@ -139,35 +139,28 @@ const LibroService = {
         return updatedCategoria;
     },
     deleteCategoria: async (id) => {
-        try {
-            // Verificar que la categoría existe
-            const categoria = await CategoriaRepository.findById(id);
-            if (!categoria) {
-                const error = new Error("Categoría no encontrada");
-                error.status = 404;
-                throw error;
-            }
 
-            // Verificar si hay libros asociados
-            const librosConCategoria = await LibroRepository.findbyCategory(id);
-            if (librosConCategoria.length > 0) {
-                const error = new Error("No se puede eliminar la categoría porque hay libros asociados a ella");
-                error.status = 400;
-                throw error;
-            }
-
-            // Eliminar la categoría
-            const deletedCategoria = await CategoriaRepository.remove(id);
-
-            console.log(`Se elimino.....`);
-
-            console.log(`Categoría ${deletedCategoria.descripcion} eliminada correctamente.`);
-            return deletedCategoria;
-
-        } catch (error) {
-            console.error("Error en deleteCategoria:", error);
+        // Verificar que la categoría existe
+        const categoria = await CategoriaRepository.findById(id);
+        if (!categoria) {
+            const error = new Error("Categoría no encontrada");
+            error.status = 404;
             throw error;
         }
+
+        // Verificar si hay libros asociados
+        const librosConCategoria = await LibroRepository.findbyCategory(id);
+        if (librosConCategoria.length > 0) {
+            const error = new Error("No se puede eliminar la categoría porque hay libros asociados a ella");
+            error.status = 400;
+            throw error;
+        }
+
+        // Eliminar la categoría
+        const deletedCategoria = await CategoriaRepository.remove(id);
+
+        return deletedCategoria;
+
     }
 };
 
