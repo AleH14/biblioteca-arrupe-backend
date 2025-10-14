@@ -1,6 +1,7 @@
 const Prestamo = require("../src/modules/prestamos/prestamo.model");
 const Usuario = require("../src/modules/usuarios/usuario.model");
 const Libro = require("../src/modules/libros/libro.model");
+const Categoria = require("../src/modules/libros/categoria/categoria.model");
 
 describe("Modelo Prestamo", () => {
   it("debe crear un préstamo válido con notificación", async () => {
@@ -11,9 +12,11 @@ describe("Modelo Prestamo", () => {
       password: "hashed"
     });
 
+    const categoria = await Categoria.create({ descripcion: "Ciencia" });
+
     const libro = await Libro.create({
       autor: "Autor de prueba",
-      categoria: { descripcion: "Test" },
+      categoria: categoria,
       editorial: "Editorial Test",
       ejemplares: [{ cdu: "QA123", estado: "disponible", ubicacionFisica: "Estante 1" }],
       isbn: "111222333",

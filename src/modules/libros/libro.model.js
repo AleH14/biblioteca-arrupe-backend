@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const categoriaSchema = require("./categoria/categoria.model");
 
 const ejemplarSchema = new mongoose.Schema({
   cdu: { type: String, required: true },
@@ -10,14 +11,10 @@ const ejemplarSchema = new mongoose.Schema({
   ubicacionFisica: { type: String, required: true }
 }, { _id: true }); // Mongoose crea _id automático
 
-const categoriaSchema = new mongoose.Schema({
-  descripcion: { type: String, required: true }
-}, { _id: false }); // no necesitamos _id adicional aquí
 
 const libroSchema = new mongoose.Schema({
   autor: { type: String, required: true },
-  categoria: { type: categoriaSchema, required: true },
-  editorial: { type: String, required: true },
+  categoria: { type: mongoose.Schema.Types.ObjectId, ref: "Categoria", required: true },
   ejemplares: { type: [ejemplarSchema], default: [] },
   fechaRegistro: { type: Date, default: Date.now },
   imagenURL: { type: String, default: null },
