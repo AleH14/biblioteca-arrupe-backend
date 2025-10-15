@@ -1,5 +1,4 @@
 const mongoose = require("mongoose");
-const categoriaSchema = require("./categoria/categoria.model");
 
 const ejemplarSchema = new mongoose.Schema({
   cdu: { type: String, required: true },
