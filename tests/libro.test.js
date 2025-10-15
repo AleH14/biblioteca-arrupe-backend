@@ -1,10 +1,13 @@
-const Libro = require("../src/models/Libro");
+const Libro = require("../src/modules/libros/libro.model");
+const Categoria = require("../src/modules/libros/categoria/categoria.model");
 
 describe("Modelo Libro", () => {
   it("debe crear un libro con ejemplares", async () => {
+    const categoria = await Categoria.create({ descripcion: "Ficción" });
+
     const libro = await Libro.create({
       autor: "Robert C. Martin",
-      categoria: { descripcion: "Programación" },
+      categoria: categoria,
       editorial: "Prentice Hall",
       ejemplares: [
         { cdu: "QA76.76", estado: "disponible", ubicacionFisica: "Estante 3" },
@@ -24,9 +27,11 @@ describe("Modelo Libro", () => {
   it("no debe permitir precio negativo", async () => {
     expect.assertions(1);
     try {
+      const categoria = await Categoria.create({ descripcion: "Test" });
+
       await Libro.create({
         autor: "Autor",
-        categoria: { descripcion: "Test" },
+        categoria: categoria,
         editorial: "Editorial",
         isbn: "1234567890",
         precio: -10,
@@ -39,9 +44,12 @@ describe("Modelo Libro", () => {
 
   it("debe permitir agregar nuevos ejemplares a un libro existente", async () => {
     // 1. Crear un libro con un ejemplar inicial
+
+    const categoria = await Categoria.create({ descripcion: "Ciencia" });
+
     const libroCreado = await Libro.create({
       autor: "Autor de prueba",
-      categoria: { descripcion: "Ciencia" },
+      categoria: categoria,
       editorial: "Editorial X",
       ejemplares: [
         { cdu: "QA100", estado: "disponible", ubicacionFisica: "Estante 1" }

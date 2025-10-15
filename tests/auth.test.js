@@ -1,7 +1,7 @@
 // tests/auth.test.js
 const request = require("supertest");
-const app = require("../src/app"); // importar la app directamente
-const Usuario = require("../src/models/Usuario");
+const app = require("../src/config/app"); // importar la app directamente
+const Usuario = require("../src/modules/usuarios/usuario.model");
 const bcrypt = require("bcrypt");
 
 describe("POST /api/auth/login", () => {

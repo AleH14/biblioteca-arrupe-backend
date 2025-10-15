@@ -1,4 +1,4 @@
-const Usuario = require("../src/models/Usuario");
+const Usuario = require("../src/modules/usuarios/usuario.model");
 
 describe("Modelo Usuario", () => {
   it("debe crear un usuario válido", async () => {
