@@ -19,7 +19,7 @@ const prestamoSchema = new mongoose.Schema({
   },
   estado: { 
     type: String, 
-    enum: ["activo", "finalizado"], 
+    enum: ["activo", "cerrado", "atrasado"], 
     default: "activo" 
   },
   fechaPrestamo: { type: Date, required: true, default: Date.now },
