@@ -371,7 +371,7 @@ class PrestamoService {
   }
 
   //Renovar un préstamo existente
-  async renovarPrestamo(prestamoId) {
+  async renovarPrestamo(prestamoId, nuevaFechaDevolucionEstimada) {
     const prestamo = await PrestamoRepository.obtenerPorId(prestamoId);
     
     if (!prestamo) {
@@ -382,11 +382,17 @@ class PrestamoService {
       throw new Error("No se puede renovar un préstamo cerrado");
     }
 
-    // Extender la fecha de devolución estimada en 15 días
-    const nuevaFechaDevolucion = new Date(prestamo.fechaDevolucionEstimada);
-    nuevaFechaDevolucion.setDate(nuevaFechaDevolucion.getDate() + 15);
+    //Validar que haya una nueva fecha de devolución estimada
+    if (!nuevaFechaDevolucionEstimada) {
+      throw new Error("Se requiere una nueva fecha de devolución estimada para renovar el préstamo");
+    }
 
-    const prestamoRenovado = await PrestamoRepository.renovarPrestamo(prestamoId, nuevaFechaDevolucion);
+    // Validar que la nueva fecha de devolución sea posterior a la actual
+    if (nuevaFechaDevolucionEstimada <= prestamo.fechaDevolucionEstimada) {
+      throw new Error("La nueva fecha de devolución debe ser posterior a la fecha de devolución estimada actual");
+    }
+
+    const prestamoRenovado = await PrestamoRepository.renovarPrestamo(prestamoId, nuevaFechaDevolucionEstimada);
 
     return {
       id: prestamoRenovado._id,

@@ -186,9 +186,8 @@ exports.obtenerTodos = async (req, res, next) => {
 // Renovar un préstamo existente
 exports.renovarPrestamo = async (req, res, next) => {
   try {
-    const { id } = req.params;
 
-    const prestamoRenovado = await PrestamoService.renovarPrestamo(id);
+    const prestamoRenovado = await PrestamoService.renovarPrestamo(req.params.id, req.body.nuevaFechaDevolucionEstimada);
 
     res.json({
       success: true,
