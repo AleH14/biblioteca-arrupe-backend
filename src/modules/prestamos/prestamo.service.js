@@ -1,9 +1,10 @@
 const PrestamoRepository = require("./prestamo.repository");
 const Libro = require("../libros/libro.model");
 const Usuario = require("../usuarios/usuario.model");
+const LibroRepository = require("../libros/libro.repository");
 
 class PrestamoService {
-  
+
   // Buscar préstamos por nombre de alumno
   async buscarPorNombreAlumno(nombre) {
     if (!nombre || nombre.trim().length === 0) {
@@ -163,7 +164,19 @@ class PrestamoService {
 
   // Crear nuevo préstamo
   async crearPrestamo(datosPrestation) {
-    const { ejemplarId, usuarioId, fechaDevolucionEstimada } = datosPrestation;
+    const { ejemplarId, usuarioId, fechaDevolucionEstimada, tipoPrestamo } = datosPrestation;
+
+    // Validar datos obligatorios
+    if (!ejemplarId || !usuarioId || !tipoPrestamo) {
+      throw new Error("Faltan datos obligatorios: ejemplarId, usuarioId, tipoPrestamo");
+    }
+
+    // Verificar que el ejemplar existe y está disponible
+    const libro = await LibroRepository.findByEjemplarId(ejemplarId);
+    if (!libro) {
+      throw new Error("Ejemplar no encontrado");
+    }
+    
 
     // Verificar que no existe un préstamo activo para este ejemplar
     const prestamoExistente = await PrestamoRepository.existePrestamoActivo(ejemplarId);
@@ -178,11 +191,18 @@ class PrestamoService {
       fechaDevolucion.setDate(fechaDevolucion.getDate() + 15); // 15 días por defecto
     }
 
+    // Validar que el usuario exista
+    const usuario = await Usuario.findById(usuarioId);
+    if (!usuario) {
+      throw new Error("Usuario no encontrado");
+    }
+
     const nuevoPrestamo = await PrestamoRepository.crear({
       ejemplarId,
       usuarioId,
       fechaDevolucionEstimada: fechaDevolucion,
-      estado: 'activo'
+      estado: 'activo',
+      tipoPrestamo: tipoPrestamo
     });
 
     return await this.obtenerDetalles(nuevoPrestamo._id);
@@ -347,6 +367,31 @@ class PrestamoService {
       atrasados: atrasados.length,
       cerrados: cerrados.length,
       porcentajeAtrasados: activos.length > 0 ? Math.round((atrasados.length / activos.length) * 100) : 0
+    };
+  }
+
+  //Renovar un préstamo existente
+  async renovarPrestamo(prestamoId) {
+    const prestamo = await PrestamoRepository.obtenerPorId(prestamoId);
+    
+    if (!prestamo) {
+      throw new Error("Préstamo no encontrado");
+    }
+
+    if (prestamo.estado === 'cerrado') {
+      throw new Error("No se puede renovar un préstamo cerrado");
+    }
+
+    // Extender la fecha de devolución estimada en 15 días
+    const nuevaFechaDevolucion = new Date(prestamo.fechaDevolucionEstimada);
+    nuevaFechaDevolucion.setDate(nuevaFechaDevolucion.getDate() + 15);
+
+    const prestamoRenovado = await PrestamoRepository.renovarPrestamo(prestamoId, nuevaFechaDevolucion);
+
+    return {
+      id: prestamoRenovado._id,
+      nuevaFechaDevolucionEstimada: prestamoRenovado.fechaDevolucionEstimada,
+      mensaje: "Préstamo renovado exitosamente"
     };
   }
 }

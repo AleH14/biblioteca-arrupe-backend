@@ -18,7 +18,7 @@ describe("Modelo Prestamo", () => {
       autor: "Autor de prueba",
       categoria: categoria,
       editorial: "Editorial Test",
-      ejemplares: [{ cdu: "QA123", estado: "disponible", ubicacionFisica: "Estante 1" }],
+      ejemplares: [{ cdu: "QA123", estado: "disponible", ubicacionFisica: "Estante 1", edificio: "C", origen: "Donado" }],
       isbn: "111222333",
       precio: 15.5,
       titulo: "Libro Test"
@@ -38,7 +38,8 @@ describe("Modelo Prestamo", () => {
           fechaEnvio: new Date("2025-09-15"),
           mensaje: "Tu libro debe devolverse antes del 20/09"
         }
-      ]
+      ],
+      tipoPrestamo: usuario.rol
     });
 
     expect(prestamo._id).toBeDefined();

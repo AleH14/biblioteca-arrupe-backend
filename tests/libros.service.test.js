@@ -40,7 +40,9 @@ describe('Libros API Endpoints', () => {
         {
           cdu: 'FIC-GAR-001',
           estado: 'disponible',
-          ubicacionFisica: 'Estante A-1'
+          ubicacionFisica: 'Estante A-1',
+          edificio: 'Principal',
+          origen: 'Comprado'
         }
       ]
     });
@@ -228,7 +230,9 @@ describe('Libros API Endpoints', () => {
         const nuevoEjemplar = {
           cdu: 'FIC-GAR-002',
           estado: 'disponible',
-          ubicacionFisica: 'Estante A-2'
+          ubicacionFisica: 'Estante A-2',
+          edificio: 'Principal',
+          origen: 'Comprado'
         };
 
         const response = await request(app)
@@ -247,7 +251,9 @@ describe('Libros API Endpoints', () => {
           .send({
             cdu: 'TEST-001',
             estado: 'disponible',
-            ubicacionFisica: 'Estante Test'
+            ubicacionFisica: 'Estante Test',
+            edificio: 'Test',
+            origen: 'Donado'
           })
           .expect(404);
 

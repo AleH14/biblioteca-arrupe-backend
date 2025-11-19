@@ -25,7 +25,13 @@ const prestamoSchema = new mongoose.Schema({
   fechaPrestamo: { type: Date, required: true, default: Date.now },
   fechaDevolucionEstimada: { type: Date, required: true },
   fechaDevolucionReal: { type: Date, default: null },
-  notificaciones: { type: [notificacionSchema], default: [] }
+  notificaciones: { type: [notificacionSchema], default: [],
+  tipoPrestamo: { 
+    type: String, 
+    enum: ["estudiante", "docente", "otro"],
+    required: true 
+  }
+   }
 }, { timestamps: true });
 
 module.exports = mongoose.model("Prestamo", prestamoSchema);

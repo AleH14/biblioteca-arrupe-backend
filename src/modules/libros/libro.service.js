@@ -76,6 +76,12 @@ const LibroService = {
 
     addEjemplar: async (libroId, ejemplarData) => {
         const libro = await LibroRepository.findById(libroId);
+        //Validar datos obligatorios
+        if (!ejemplarData.cdu || !ejemplarData.estado || !ejemplarData.origen) {
+            const error = new Error("Faltan datos obligatorios del ejemplar: cdu, estado, ubicacionFisica, edificio, origen");
+            error.status = 400;
+            throw error;
+        }
         if (!libro) {
             const error = new Error("Libro no encontrado");
             error.status = 404;

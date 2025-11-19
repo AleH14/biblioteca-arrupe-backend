@@ -153,6 +153,17 @@ class PrestamoRepository {
       select: 'titulo autor'
     });
   }
+
+  //Renovar préstamo
+  async renovarPrestamo(id, nuevaFechaDevolucionEstimada) {
+    return await Prestamo.findByIdAndUpdate(
+      id,
+      { 
+        fechaDevolucionEstimada: nuevaFechaDevolucionEstimada
+      },
+      { new: true }
+    );
+  }
 }
 
 module.exports = new PrestamoRepository();

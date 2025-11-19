@@ -57,4 +57,8 @@ router.post("/", validarCreacionPrestamo, controller.crearPrestamo);
 // Crear préstamo con búsqueda amigable
 router.post("/crear", validarCreacionPrestamoConBusqueda, controller.crearPrestamoConBusqueda);
 
+//POST /api/prestamos/renovar/:id
+// Renovar un préstamo existente
+router.post("/renovar/:id", validarId, controller.renovarPrestamo); 
+
 module.exports = router;

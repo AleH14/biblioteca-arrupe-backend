@@ -143,7 +143,7 @@ exports.crearPrestamoConBusqueda = async (req, res, next) => {
 exports.crearPrestamo = async (req, res, next) => {
   try {
     const prestamo = await PrestamoService.crearPrestamo(req.body);
-    
+
     res.status(201).json({
       success: true,
       data: prestamo,
@@ -177,6 +177,23 @@ exports.obtenerTodos = async (req, res, next) => {
       success: true,
       data: prestamos,
       total: prestamos.length
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// Renovar un préstamo existente
+exports.renovarPrestamo = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    const prestamoRenovado = await PrestamoService.renovarPrestamo(id);
+
+    res.json({
+      success: true,
+      data: prestamoRenovado,
+      message: "Préstamo renovado exitosamente"
     });
   } catch (err) {
     next(err);
