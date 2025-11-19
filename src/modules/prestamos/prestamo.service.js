@@ -329,9 +329,17 @@ class PrestamoService {
       fechaDevolucionFinal = new Date(fechaDevolucionFinal);
     }
 
-    // Validar que la fecha de devolución sea posterior a la de préstamo
-    if (fechaDevolucionFinal <= fechaPrestamoFinal) {
-      throw new Error("La fecha de devolución debe ser posterior a la fecha de préstamo");
+
+    const fechaDevolucionDate = new Date(nuevaFechaDevolucionEstimada);
+    const fechaPrestamoDate = new Date(prestamo.fechaDevolucionEstimada);
+
+    // Validar fecha válida
+    if (isNaN(fechaPrestamoDate.getTime())) {
+      throw new Error("La nueva fecha de devolución estimada no es válida");
+    }
+
+    if (fechaDevolucionDate <= fechaPrestamoDate) {
+      throw new Error("La nueva fecha debe ser posterior a la fecha de devolución estimada actual");
     }
 
     // Crear el préstamo
@@ -387,9 +395,16 @@ class PrestamoService {
       throw new Error("Se requiere una nueva fecha de devolución estimada para renovar el préstamo");
     }
 
-    // Validar que la nueva fecha de devolución sea posterior a la actual
-    if (nuevaFechaDevolucionEstimada <= prestamo.fechaDevolucionEstimada) {
-      throw new Error("La nueva fecha de devolución debe ser posterior a la fecha de devolución estimada actual");
+    const fechaNueva = new Date(nuevaFechaDevolucionEstimada);
+    const fechaActual = new Date(prestamo.fechaDevolucionEstimada);
+
+    // Validar fecha válida
+    if (isNaN(fechaNueva.getTime())) {
+      throw new Error("La nueva fecha de devolución estimada no es válida");
+    }
+
+    if (fechaNueva <= fechaActual) {
+      throw new Error("La nueva fecha debe ser posterior a la fecha de devolución estimada actual");
     }
 
     const prestamoRenovado = await PrestamoRepository.renovarPrestamo(prestamoId, nuevaFechaDevolucionEstimada);
