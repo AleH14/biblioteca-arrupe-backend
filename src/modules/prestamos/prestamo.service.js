@@ -1,9 +1,10 @@
 const PrestamoRepository = require("./prestamo.repository");
 const Libro = require("../libros/libro.model");
 const Usuario = require("../usuarios/usuario.model");
+const LibroRepository = require("../libros/libro.repository");
 
 class PrestamoService {
-  
+
   // Buscar préstamos por nombre de alumno
   async buscarPorNombreAlumno(nombre) {
     if (!nombre || nombre.trim().length === 0) {
@@ -163,7 +164,19 @@ class PrestamoService {
 
   // Crear nuevo préstamo
   async crearPrestamo(datosPrestation) {
-    const { ejemplarId, usuarioId, fechaDevolucionEstimada } = datosPrestation;
+    const { ejemplarId, usuarioId, fechaDevolucionEstimada, tipoPrestamo } = datosPrestation;
+
+    // Validar datos obligatorios
+    if (!ejemplarId || !usuarioId || !tipoPrestamo) {
+      throw new Error("Faltan datos obligatorios: ejemplarId, usuarioId, tipoPrestamo");
+    }
+
+    // Verificar que el ejemplar existe y está disponible
+    const libro = await LibroRepository.findByEjemplarId(ejemplarId);
+    if (!libro) {
+      throw new Error("Ejemplar no encontrado");
+    }
+    
 
     // Verificar que no existe un préstamo activo para este ejemplar
     const prestamoExistente = await PrestamoRepository.existePrestamoActivo(ejemplarId);
@@ -178,11 +191,18 @@ class PrestamoService {
       fechaDevolucion.setDate(fechaDevolucion.getDate() + 15); // 15 días por defecto
     }
 
+    // Validar que el usuario exista
+    const usuario = await Usuario.findById(usuarioId);
+    if (!usuario) {
+      throw new Error("Usuario no encontrado");
+    }
+
     const nuevoPrestamo = await PrestamoRepository.crear({
       ejemplarId,
       usuarioId,
       fechaDevolucionEstimada: fechaDevolucion,
-      estado: 'activo'
+      estado: 'activo',
+      tipoPrestamo: tipoPrestamo
     });
 
     return await this.obtenerDetalles(nuevoPrestamo._id);
@@ -309,9 +329,17 @@ class PrestamoService {
       fechaDevolucionFinal = new Date(fechaDevolucionFinal);
     }
 
-    // Validar que la fecha de devolución sea posterior a la de préstamo
-    if (fechaDevolucionFinal <= fechaPrestamoFinal) {
-      throw new Error("La fecha de devolución debe ser posterior a la fecha de préstamo");
+
+    const fechaDevolucionDate = new Date(nuevaFechaDevolucionEstimada);
+    const fechaPrestamoDate = new Date(prestamo.fechaDevolucionEstimada);
+
+    // Validar fecha válida
+    if (isNaN(fechaPrestamoDate.getTime())) {
+      throw new Error("La nueva fecha de devolución estimada no es válida");
+    }
+
+    if (fechaDevolucionDate <= fechaPrestamoDate) {
+      throw new Error("La nueva fecha debe ser posterior a la fecha de devolución estimada actual");
     }
 
     // Crear el préstamo
@@ -347,6 +375,44 @@ class PrestamoService {
       atrasados: atrasados.length,
       cerrados: cerrados.length,
       porcentajeAtrasados: activos.length > 0 ? Math.round((atrasados.length / activos.length) * 100) : 0
+    };
+  }
+
+  //Renovar un préstamo existente
+  async renovarPrestamo(prestamoId, nuevaFechaDevolucionEstimada) {
+    const prestamo = await PrestamoRepository.obtenerPorId(prestamoId);
+    
+    if (!prestamo) {
+      throw new Error("Préstamo no encontrado");
+    }
+
+    if (prestamo.estado === 'cerrado') {
+      throw new Error("No se puede renovar un préstamo cerrado");
+    }
+
+    //Validar que haya una nueva fecha de devolución estimada
+    if (!nuevaFechaDevolucionEstimada) {
+      throw new Error("Se requiere una nueva fecha de devolución estimada para renovar el préstamo");
+    }
+
+    const fechaNueva = new Date(nuevaFechaDevolucionEstimada);
+    const fechaActual = new Date(prestamo.fechaDevolucionEstimada);
+
+    // Validar fecha válida
+    if (isNaN(fechaNueva.getTime())) {
+      throw new Error("La nueva fecha de devolución estimada no es válida");
+    }
+
+    if (fechaNueva <= fechaActual) {
+      throw new Error("La nueva fecha debe ser posterior a la fecha de devolución estimada actual");
+    }
+
+    const prestamoRenovado = await PrestamoRepository.renovarPrestamo(prestamoId, nuevaFechaDevolucionEstimada);
+
+    return {
+      id: prestamoRenovado._id,
+      nuevaFechaDevolucionEstimada: prestamoRenovado.fechaDevolucionEstimada,
+      mensaje: "Préstamo renovado exitosamente"
     };
   }
 }

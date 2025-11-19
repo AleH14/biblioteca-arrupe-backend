@@ -17,7 +17,8 @@ const LibroRepository = {
     findByAuthor: (author) => Libro.find({ autor: new RegExp(author, 'i') }).populate('categoria'),
     findByTitle: (title) => Libro.find({ titulo: new RegExp(title, 'i') }).populate('categoria'),
     findbyCategory: (category) => Libro.find({ categoria: category }).populate('categoria'),
-
+    findByEjemplarId: (ejemplarId) => Libro.findOne({ "ejemplares._id": ejemplarId }).populate('categoria'),
+    
     // Gestión de ejemplares
     addEjemplar: (libroId, ejemplarData) =>
         Libro.findByIdAndUpdate(

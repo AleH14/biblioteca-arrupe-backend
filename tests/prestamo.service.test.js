@@ -1,5 +1,9 @@
 const PrestamoService = require('../src/modules/prestamos/prestamo.service');
 const PrestamoRepository = require('../src/modules/prestamos/prestamo.repository');
+const Usuario = require('../src/modules/usuarios/usuario.model');
+const Libro = require('../src/modules/libros/libro.model');
+const Categoria = require('../src/modules/libros/categoria/categoria.model');
+
 
 // Mock del repositorio para las pruebas
 jest.mock('../src/modules/prestamos/prestamo.repository');
@@ -104,9 +108,28 @@ describe('PrestamoService', () => {
 
   describe('crearPrestamo', () => {
     it('debería crear un nuevo préstamo', async () => {
+      const usuario = await Usuario.create({
+        nombre: "Test Usuario",
+        email: "test@test.com",
+        password: "hashed"
+      });
+
+      const categoria = await Categoria.create({ descripcion: "Ficción" });
+
+      const libro = await Libro.create({
+        autor: "Autor Test",
+        isbn: "1234567890",
+        titulo: "Libro Test",
+        ejemplares: [{ cdu: "QA123", estado: "disponible", ubicacionFisica: "Estante 1", edificio: "C", origen: "Donado" }],
+        categoria: categoria.id,
+      });
+
+      const ejemplarId = libro.ejemplares[0]._id;
+
       const datosPrestation = {
-        ejemplarId: '507f1f77bcf86cd799439012',
-        usuarioId: '507f1f77bcf86cd799439013'
+        ejemplarId: ejemplarId,
+        usuarioId: usuario.id,
+        tipoPrestamo: "estudiante"
       };
 
       const mockPrestamoCreado = {
@@ -131,14 +154,76 @@ describe('PrestamoService', () => {
     });
 
     it('debería lanzar error si ya existe un préstamo activo para el ejemplar', async () => {
+      const usuario = await Usuario.create({
+        nombre: "Test Usuario",
+        email: "test@test.com",
+        password: "hashed"
+      });
+
+      const categoria = await Categoria.create({ descripcion: "Ficción" });
+
+      const libro = await Libro.create({
+        autor: "Autor Test",
+        isbn: "1234567890",
+        titulo: "Libro Test",
+        ejemplares: [{ cdu: "QA123", estado: "disponible", ubicacionFisica: "Estante 1", edificio: "C", origen: "Donado" }],
+        categoria: categoria.id,
+      });
+
+      const ejemplarId = libro.ejemplares[0]._id;
+
       const datosPrestation = {
-        ejemplarId: '507f1f77bcf86cd799439012',
-        usuarioId: '507f1f77bcf86cd799439013'
+        ejemplarId: ejemplarId,
+        usuarioId: usuario.id,
+        tipoPrestamo: "estudiante"
       };
 
       PrestamoRepository.existePrestamoActivo.mockResolvedValue({ _id: 'existing' });
 
       await expect(PrestamoService.crearPrestamo(datosPrestation)).rejects.toThrow('Ya existe un préstamo activo para este ejemplar');
+    });
+  });
+
+  describe('renovarPrestamo', () => {
+    it('debería renovar un préstamo activo', async () => {
+      const mockPrestamo = {
+        _id: '507f1f77bcf86cd799439011',
+        estado: 'activo',
+        fechaDevolucionEstimada: new Date('2025-10-16')
+      };
+
+      const nuevaFechaDevolucion = new Date('2025-10-31');
+
+      const mockPrestamoRenovado = {
+        ...mockPrestamo,
+        fechaDevolucionEstimada: nuevaFechaDevolucion
+      };
+
+      PrestamoRepository.obtenerPorId.mockResolvedValue(mockPrestamo);
+      PrestamoRepository.renovarPrestamo.mockResolvedValue(mockPrestamoRenovado);
+
+      const resultado = await PrestamoService.renovarPrestamo('507f1f77bcf86cd799439011', nuevaFechaDevolucion);
+
+      expect(PrestamoRepository.obtenerPorId).toHaveBeenCalledWith('507f1f77bcf86cd799439011');
+      expect(PrestamoRepository.renovarPrestamo).toHaveBeenCalledWith('507f1f77bcf86cd799439011', nuevaFechaDevolucion);
+      expect(resultado.nuevaFechaDevolucionEstimada).toEqual(nuevaFechaDevolucion);
+    });
+
+    it('debería lanzar error si el préstamo no existe', async () => {
+      PrestamoRepository.obtenerPorId.mockResolvedValue(null);
+
+      await expect(PrestamoService.renovarPrestamo('507f1f77bcf86cd799439011', new Date())).rejects.toThrow('Préstamo no encontrado');
+    });
+
+    it('debería lanzar error si el préstamo está cerrado', async () => {
+      const mockPrestamo = {
+        _id: '507f1f77bcf86cd799439011',
+        estado: 'cerrado'
+      };
+
+      PrestamoRepository.obtenerPorId.mockResolvedValue(mockPrestamo);
+
+      await expect(PrestamoService.renovarPrestamo('507f1f77bcf86cd799439011', new Date())).rejects.toThrow('No se puede renovar un préstamo cerrado');
     });
   });
 });

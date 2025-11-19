@@ -10,8 +10,8 @@ describe("Modelo Libro", () => {
       categoria: categoria,
       editorial: "Prentice Hall",
       ejemplares: [
-        { cdu: "QA76.76", estado: "disponible", ubicacionFisica: "Estante 3" },
-        { cdu: "QA76.77", estado: "prestado", ubicacionFisica: "Estante 3" }
+        { cdu: "QA76.76", estado: "disponible", ubicacionFisica: "Estante 3", edificio: "A", origen: "Comprado" },
+        { cdu: "QA76.77", estado: "prestado", ubicacionFisica: "Estante 3", edificio: "A", origen: "Donado" }
       ],
       isbn: "9780132350884",
       precio: 29.99,
@@ -52,7 +52,7 @@ describe("Modelo Libro", () => {
       categoria: categoria,
       editorial: "Editorial X",
       ejemplares: [
-        { cdu: "QA100", estado: "disponible", ubicacionFisica: "Estante 1" }
+        { cdu: "QA100", estado: "disponible", ubicacionFisica: "Estante 1", edificio: "B", origen: "Comprado" }
       ],
       isbn: "222333444",
       precio: 19.99,
@@ -69,7 +69,9 @@ describe("Modelo Libro", () => {
           ejemplares: {
             cdu: "QA101",
             estado: "disponible",
-            ubicacionFisica: "Estante 2"
+            ubicacionFisica: "Estante 2", 
+            edificio: "B",
+            origen: "Donado"
           }
         }
       },
