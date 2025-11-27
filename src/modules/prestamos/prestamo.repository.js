@@ -1,3 +1,4 @@
+const { path } = require("../../config/app");
 const Prestamo = require("./prestamo.model");
 
 class PrestamoRepository {
@@ -13,7 +14,7 @@ class PrestamoRepository {
         select: 'nombre email telefono rol'
       })
       .populate({
-        path: 'ejemplarId',
+        path: 'libroId',
         select: 'titulo autor isbn estado ejemplares'
       })
       .exec()
@@ -50,7 +51,7 @@ class PrestamoRepository {
         select: 'nombre email telefono rol'
       })
       .populate({
-        path: 'ejemplarId',
+        path: 'libroId',
         select: 'titulo autor isbn estado ejemplares'
       })
       .sort({ fechaPrestamo: -1 });
@@ -64,8 +65,8 @@ class PrestamoRepository {
         select: 'nombre email telefono rol'
       })
       .populate({
-        path: 'ejemplarId',
-        select: 'titulo autor isbn editorial fechaPublicacion categoria ejemplares'
+        path: 'libroId',
+        select: 'titulo autor isbn editorial ejemplares'
       });
   }
 
@@ -97,7 +98,7 @@ class PrestamoRepository {
         select: 'nombre email telefono rol'
       })
       .populate({
-        path: 'ejemplarId',
+        path: 'libroId',
         select: 'titulo autor isbn estado ejemplares'
       })
       .sort({ fechaPrestamo: -1 })
@@ -129,7 +130,7 @@ class PrestamoRepository {
       estado: 'activo'
     })
     .populate({
-      path: 'ejemplarId',
+      path: 'libroId',
       select: 'titulo autor isbn'
     })
     .sort({ fechaPrestamo: -1 });
@@ -149,7 +150,7 @@ class PrestamoRepository {
       select: 'nombre email'
     })
     .populate({
-      path: 'ejemplarId',
+      path: 'libroId',
       select: 'titulo autor'
     });
   }
@@ -164,6 +165,139 @@ class PrestamoRepository {
       { new: true }
     );
   }
+
+//Reservas
+
+
+
+// Crear reserva
+  async crearReserva(prestamoId, datosReserva) {
+    const prestamoActualizado = await Prestamo.findByIdAndUpdate(
+    prestamoId,
+    { 
+      estado: 'reserva',
+      reserva: datosReserva
+    },
+    { new: true }
+  );
+
+  // Retornar SOLO el objeto reserva
+  return prestamoActualizado?.reserva || null;
+}
+
+// Cancelar reserva
+  async cancelarReserva(id) {
+    return await Prestamo.findByIdAndUpdate(
+      id,
+      { 
+        estado: 'cancelado',
+        reserva: null
+      },
+      { new: true }
+    );
+  }
+
+  async cambiarEstadoPrestamo(id, nuevoEstado) {
+    return await Prestamo.findByIdAndUpdate(
+      id,
+      { estado: nuevoEstado },
+      { new: true }
+    );
+  }
+
+  // Transformar reserva en préstamo activo
+  async transformarReservaAPrestamo(id, nuevaFechaDevolucionEstimada) {
+    return await Prestamo.findByIdAndUpdate(
+      id,
+      { 
+        estado: 'activo',
+        fechaDevolucionEstimada: nuevaFechaDevolucionEstimada
+      },
+      { new: true }
+    );
+  }
+
+  // Obtener todas las reservas
+  async obtenerTodasLasReservas() {
+    return await Prestamo.find({
+      reserva: { $ne: null }     //validación
+    })
+    .populate({
+    path: 'usuarioId',
+    select: 'nombre email telefono rol'
+  })
+  .populate({
+    path: 'libroId',
+    select: 'titulo autor isbn ejemplares'
+  });
+};
+
+
+// Obtener reservas de un usuario específico
+async obtenerReservasPorUsuario(usuarioId) {
+  return await Prestamo.find({
+    usuarioId: usuarioId,
+    estado: 'reserva',
+    reserva: { $ne: null }     //validación
+  })
+  .populate({
+    path: 'usuarioId',
+    select: 'nombre email telefono rol'
+  })
+  .populate({
+    path: 'libroId',
+    select: 'titulo autor isbn editorial ejemplares'
+  });
+};
+
+  
+  // Obtener detalles de una reserva específica
+  async obtenerDetallesReserva(id) {
+    return await Prestamo.findById(id).populate({
+        path: 'usuarioId',
+        select: 'nombre email telefono rol'
+      })
+      .populate({
+        path: 'libroId',
+        select: 'titulo autor isbn editorial ejemplares'
+      });
+  };  
+
+
+  //obtener reservas vigentes
+  async obtenerReservasVigentes() {
+    const fechaActual = new Date();
+    return await Prestamo.find({
+      estado: 'reserva',
+      reserva: { $ne: null },     //validación
+      'reserva.fechaExpiracion': { $gt: fechaActual }
+    }).populate({
+        path: 'usuarioId',
+        select: 'nombre email telefono rol'
+      })
+      .populate({
+        path: 'libroId',
+        select: 'titulo autor isbn editorial ejemplares'
+      });
+  };
+
+  //obtener reservas expiradas
+  async obtenerReservasExpiradas() {
+    const fechaActual = new Date();
+    return await Prestamo.find({
+      estado: 'reserva',
+      reserva: { $ne: null },
+      'reserva.fechaExpiracion': { $lte: fechaActual }
+    }).populate({
+        path: 'usuarioId',
+        select: 'nombre email telefono rol'
+      })
+      .populate({
+        path: 'libroId',
+        select: 'titulo autor isbn editorial ejemplares'
+      });
+  };
+
 }
 
 module.exports = new PrestamoRepository();

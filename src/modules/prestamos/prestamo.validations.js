@@ -1,14 +1,14 @@
 // Validaciones para el módulo de préstamos
 
 const validarCreacionPrestamo = (req, res, next) => {
-  const { ejemplarId, usuarioId } = req.body;
+  const { libroId, usuarioId, fechaDevolucionEstimada, tipoPrestamo } = req.body;
   const errores = [];
 
-  // Validar ejemplarId
-  if (!ejemplarId) {
-    errores.push("El ejemplarId es requerido");
-  } else if (!isValidObjectId(ejemplarId)) {
-    errores.push("El ejemplarId no es válido");
+  // Validar libroId
+  if (!libroId) {
+    errores.push("El libroId es requerido");
+  } else if (!isValidObjectId(libroId)) {
+    errores.push("El libroId no es válido");
   }
 
   // Validar usuarioId
@@ -18,9 +18,17 @@ const validarCreacionPrestamo = (req, res, next) => {
     errores.push("El usuarioId no es válido");
   }
 
+  //Validar tipo Prestamo
+  const tiposValidos = ["estudiante", "docente", "otro"];
+  if (!tipoPrestamo) {
+    errores.push("El tipoPrestamo es requerido");
+  } else if (!tiposValidos.includes(tipoPrestamo)) {
+    errores.push(`El tipoPrestamo debe ser uno de los siguientes: ${tiposValidos.join(", ")}`);
+  }
+
   // Validar fechaDevolucionEstimada si se proporciona
-  if (req.body.fechaDevolucionEstimada) {
-    const fecha = new Date(req.body.fechaDevolucionEstimada);
+  if (fechaDevolucionEstimada) {
+    const fecha = new Date(fechaDevolucionEstimada);
     if (isNaN(fecha.getTime())) {
       errores.push("La fechaDevolucionEstimada no es una fecha válida");
     } else if (fecha <= new Date()) {
@@ -95,14 +103,14 @@ const validarId = (req, res, next) => {
 };
 
 const validarCreacionPrestamoConBusqueda = (req, res, next) => {
-  const { ejemplarId, usuarioId, fechaPrestamo, fechaDevolucionEstimada } = req.body;
+  const { libroId, usuarioId, fechaPrestamo, fechaDevolucionEstimada, tipoPrestamo } = req.body;
   const errores = [];
 
-  // Validar ejemplarId
-  if (!ejemplarId) {
-    errores.push("El ejemplarId es requerido");
-  } else if (!isValidObjectId(ejemplarId)) {
-    errores.push("El ejemplarId no es válido");
+  // Validar libroId
+  if (!libroId) {
+    errores.push("El libroId es requerido");
+  } else if (!isValidObjectId(libroId)) {
+    errores.push("El libroId no es válido");
   }
 
   // Validar usuarioId
@@ -132,6 +140,14 @@ const validarCreacionPrestamoConBusqueda = (req, res, next) => {
     if (fecha <= fechaComparacion) {
       errores.push("La fechaDevolucionEstimada debe ser posterior a la fecha de préstamo");
     }
+  }
+
+    //Validar tipo Prestamo
+  const tiposValidos = ["estudiante", "docente", "otro"];
+  if (!tipoPrestamo) {
+    errores.push("El tipoPrestamo es requerido");
+  } else if (!tiposValidos.includes(tipoPrestamo)) {
+    errores.push(`El tipoPrestamo debe ser uno de los siguientes: ${tiposValidos.join(", ")}`);
   }
 
   if (errores.length > 0) {

@@ -197,4 +197,126 @@ exports.renovarPrestamo = async (req, res, next) => {
   } catch (err) {
     next(err);
   }
+
+};
+
+// Obtener todas las reservas
+exports.obtenerTodasLasReservas = async (req, res, next) => {
+  try {
+    const reservas = await PrestamoService.obtenerTodasLasReservas();
+    
+    res.json({
+      success: true,
+      data: reservas,
+      total: reservas.length
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// Obtener reservas vigentes
+exports.obtenerReservasVigentes = async (req, res, next) => {
+  try {
+    const reservas = await PrestamoService.obtenerReservasVigentes();
+    
+    res.json({
+      success: true,
+      data: reservas,
+      total: reservas.length
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// Obtener reservas expiradas
+exports.obtenerReservasExpiradas = async (req, res, next) => {
+  try {
+    const reservas = await PrestamoService.obtenerReservasExpiradas();
+    
+    res.json({
+      success: true,
+      data: reservas,
+      total: reservas.length
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// Obtener reservas de un usuario específico
+exports.obtenerReservasPorUsuario = async (req, res, next) => {
+  try {
+    const { usuarioId } = req.params;
+    const reservas = await PrestamoService.obtenerReservasPorUsuario(usuarioId);
+    
+    res.json({
+      success: true,
+      data: reservas,
+      total: reservas.length
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// Obtener detalles de una reserva específica
+exports.obtenerDetallesReserva = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const reserva = await PrestamoService.obtenerDetallesReserva(id);
+    
+    res.json({
+      success: true,
+      data: reserva
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// Crear una nueva reserva para un libro
+exports.reservarLibro = async (req, res, next) => {
+  try {
+    const reserva = await PrestamoService.reservarLibro(req.body);
+    
+    res.status(201).json({
+      success: true,
+      data: reserva,
+      message: "Reserva creada exitosamente"
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// Activar una reserva y convertirla en préstamo
+exports.activarReserva = async (req, res, next) => {
+  try {
+    const prestamo = await PrestamoService.activarReserva(req.params.id);
+    
+    res.json({
+      success: true,
+      data: prestamo,
+      message: "Reserva activada y convertida en préstamo exitosamente"
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// Cancelar una reserva existente
+exports.cancelarReserva = async (req, res, next) => {
+  try {
+    const resultado = await PrestamoService.cancelarReserva(req.params.id);
+    
+    res.json({
+      success: true,
+      data: resultado,
+      message: "Reserva cancelada exitosamente"
+    });
+  } catch (err) {
+    next(err);
+  }
 };
