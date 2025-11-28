@@ -20,8 +20,10 @@ const libroSchema = new mongoose.Schema({
   fechaRegistro: { type: Date, default: Date.now },
   imagenURL: { type: String, default: null },
   isbn: { type: String, required: true, unique: true },
+  editorial: { type: String },
   precio: { type: Number, min: 0 },
-  titulo: { type: String, required: true }
+  titulo: { type: String, required: true },
+  disponibilidad: { type: Boolean, default: true },
 }, { timestamps: true });
 
 module.exports = mongoose.model("Libro", libroSchema);
