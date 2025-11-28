@@ -1,4 +1,3 @@
-const { path } = require("../../config/app");
 const Prestamo = require("./prestamo.model");
 
 class PrestamoRepository {

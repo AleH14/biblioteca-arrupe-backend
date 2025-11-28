@@ -142,7 +142,7 @@ const validarCreacionPrestamoConBusqueda = (req, res, next) => {
     }
   }
 
-    //Validar tipo Prestamo
+  //Validar tipo Prestamo
   const tiposValidos = ["estudiante", "docente", "otro"];
   if (!tipoPrestamo) {
     errores.push("El tipoPrestamo es requerido");

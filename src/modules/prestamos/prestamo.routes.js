@@ -84,9 +84,9 @@ router.get("/reservas/usuario/:usuarioId", controller.obtenerReservasPorUsuario)
 // Obtener detalles de una reserva específica
 router.get("/reserva/:id", validarId, controller.obtenerDetallesReserva);
 
-// POST /api/prestamos/:id/reservar-libro
+// POST /api/prestamos/reservar-libro
 // Crear una nueva reserva para un libro
-router.post("/:id/reservar-libro", validarCreacionPrestamoConBusqueda, controller.reservarLibro);
+router.post("/reservar-libro", validarCreacionPrestamoConBusqueda, controller.reservarLibro);
 
 // POST /api/prestamos/:id/activar-reserva
 // Activar una reserva y convertirla en préstamo

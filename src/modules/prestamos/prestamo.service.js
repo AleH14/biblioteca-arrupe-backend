@@ -450,10 +450,9 @@ async obtenerPorClasificacion(clasificacion) {
     };
   }
 
-async obtenerTodasLasReservas() {
-  const reservas = await PrestamoRepository.obtenerTodasLasReservas();
-
-  return reservas.map(r => {
+  // Mapeo de todas las reservas
+  async mapearReservas(reservas) {
+    return reservas.map(r => {
     const ejemplar = r.libroId.ejemplares.id(r.ejemplarId);
 
     return {
@@ -484,107 +483,31 @@ async obtenerTodasLasReservas() {
 }
 
 
+async obtenerTodasLasReservas() {
+  const reservas = await PrestamoRepository.obtenerTodasLasReservas();
+
+  return await this.mapearReservas(reservas);
+}
+
+
 
   // Obtener reservas vigentes
   async obtenerReservasVigentes() {
     const reservas = await PrestamoRepository.obtenerReservasVigentes();
-    console.log(reservas);
-    return reservas.map(r => {
-    const ejemplar = r.libroId.ejemplares.id(r.ejemplarId);
-
-    return {
-      id: r._id,
-      usuario: {
-        id: r.usuarioId._id,
-        nombre: r.usuarioId.nombre,
-        email: r.usuarioId.email
-      },
-      libro: {
-        id: r.libroId._id,
-        titulo: r.libroId.titulo,
-        autor: r.libroId.autor,
-        isbn: r.libroId.isbn
-      },
-      ejemplar: {
-        id: ejemplar._id,
-        cdu: ejemplar.cdu,
-        ubicacionFisica: ejemplar.ubicacionFisica,
-        estado: ejemplar.estado
-      },
-      reserva: {
-        fechaReserva: r.reserva.fechaReserva,
-        fechaExpiracion: r.reserva.fechaExpiracion
-      }
-    };
-  });
+    return await this.mapearReservas(reservas);
   }
 
   // Obtener reservas expiradas
   async obtenerReservasExpiradas() {
     const reservas = await PrestamoRepository.obtenerReservasExpiradas();
-
-    return reservas.map(r => {
-    const ejemplar = r.libroId.ejemplares.id(r.ejemplarId);
-
-    return {
-      id: r._id,
-      usuario: {
-        id: r.usuarioId._id,
-        nombre: r.usuarioId.nombre,
-        email: r.usuarioId.email
-      },
-      libro: {
-        id: r.libroId._id,
-        titulo: r.libroId.titulo,
-        autor: r.libroId.autor,
-        isbn: r.libroId.isbn
-      },
-      ejemplar: {
-        id: ejemplar._id,
-        cdu: ejemplar.cdu,
-        ubicacionFisica: ejemplar.ubicacionFisica,
-        estado: ejemplar.estado
-      },
-      reserva: {
-        fechaReserva: r.reserva.fechaReserva,
-        fechaExpiracion: r.reserva.fechaExpiracion
-      }
-    };
-  });
+    return await this.mapearReservas(reservas);
   }
 
   // Obtener reservas de un usuario específico
   async obtenerReservasPorUsuario(usuarioId) {
     const reservas = await PrestamoRepository.obtenerReservasPorUsuario(usuarioId);
 
-    return reservas.map(r => {
-    const ejemplar = r.libroId.ejemplares.id(r.ejemplarId);
-
-    return {
-      id: r._id,
-      usuario: {
-        id: r.usuarioId._id,
-        nombre: r.usuarioId.nombre,
-        email: r.usuarioId.email
-      },
-      libro: {
-        id: r.libroId._id,
-        titulo: r.libroId.titulo,
-        autor: r.libroId.autor,
-        isbn: r.libroId.isbn
-      },
-      ejemplar: {
-        id: ejemplar._id,
-        cdu: ejemplar.cdu,
-        ubicacionFisica: ejemplar.ubicacionFisica,
-        estado: ejemplar.estado
-      },
-      reserva: {
-        fechaReserva: r.reserva.fechaReserva,
-        fechaExpiracion: r.reserva.fechaExpiracion
-      }
-    };
-  });
+    return await this.mapearReservas(reservas);
   }
 
   // Obtener detalles de una reserva específica

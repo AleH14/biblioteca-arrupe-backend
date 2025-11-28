@@ -1,7 +1,6 @@
 // src/modules/libro/libro.repository.js
 // Encargado de acceso a datos. Solo gestiona consultas de libros.
 
-const { set } = require("../../config/app");
 const Libro = require("./libro.model");
 
 const LibroRepository = {

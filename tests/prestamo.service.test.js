@@ -1,11 +1,7 @@
 const PrestamoService = require('../src/modules/prestamos/prestamo.service');
 const PrestamoRepository = require('../src/modules/prestamos/prestamo.repository');
 const Usuario = require('../src/modules/usuarios/usuario.model');
-const Libro = require('../src/modules/libros/libro.model');
-const Categoria = require('../src/modules/libros/categoria/categoria.model');
 const LibroRepository = require('../src/modules/libros/libro.repository');
-const UsuarioRepository = require('../src/modules/usuarios/usuario.repository');
-
 // Mock del repositorio para las pruebas
 jest.mock('../src/modules/prestamos/prestamo.repository');
 jest.mock('../src/modules/libros/libro.repository');
