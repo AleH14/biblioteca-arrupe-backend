@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const controller = require("./prestamo.controller");
 const { verifyToken } = require("../../core/middlewares/auth.middleware");
+const { verificarRol } = require("../../core/middlewares/roles.middleware");
 const { 
   validarCreacionPrestamo, 
   validarCreacionPrestamoConBusqueda,
