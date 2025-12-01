@@ -1,4 +1,4 @@
-// role.middleware.js
+// roles.middleware.js
 exports.verificarRol = (...allowedRoles) => {
   return (req, res, next) => {
     if (!req.user) {

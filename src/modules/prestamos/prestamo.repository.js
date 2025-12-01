@@ -135,6 +135,19 @@ class PrestamoRepository {
     .sort({ fechaPrestamo: -1 });
   }
 
+  // Obtener préstamos de un usuario específico
+  async obtenerPrestamosPorUsuario(usuarioId) {
+    return await Prestamo.find({
+      usuarioId: usuarioId
+    })
+    .populate({
+      path: 'libroId',
+      select: 'titulo autor isbn'
+    })
+    .sort({ fechaPrestamo: -1 });
+  }
+
+
   // Obtener préstamos próximos a vencer (para notificaciones)
   async obtenerProximosAVencer(diasAnticipacion = 3) {
     const fechaLimite = new Date();

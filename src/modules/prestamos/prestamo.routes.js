@@ -1,3 +1,6 @@
+// backend/src/modules/prestamos/prestamo.routes.js
+// Define los endpoints y enlaza con el controlador.
+
 const express = require("express");
 const router = express.Router();
 const controller = require("./prestamo.controller");
@@ -44,11 +47,19 @@ router.get("/estado/:estado", verificarRol("admin", "profesor"), validarEstado, 
 // Cambiar estado del préstamo a cerrado/finalizado
 router.put("/:id/cerrar", verificarRol("admin", "profesor"), validarCierrePrestamo, controller.cerrarPrestamo);
 
+// GET /api/prestamos/mis-prestamos
+// Obtener préstamos del usuario autenticado
+router.get("/mis-prestamos", verificarRol("admin", "profesor", "estudiante"), controller.obtenerPrestamosDelUsuario);
+
+// POST /api/prestamos/crear
+// Crear préstamo con búsqueda amigable
+router.post("/crear", verificarRol("admin", "profesor"), validarCreacionPrestamoConBusqueda, controller.crearPrestamoConBusqueda);
+
+// Rutas generales al final
+
 // GET /api/prestamos/:id
 // Obtener detalles de un préstamo específico
 router.get("/:id", verificarRol("admin", "profesor", "estudiante"), validarId, controller.obtenerDetalles);
-
-// Rutas generales al final
 
 // GET /api/prestamos
 // Obtener todos los préstamos
@@ -58,9 +69,6 @@ router.get("/", verificarRol("admin", "profesor"), controller.obtenerTodos);
 // Crear nuevo préstamo (método original con IDs)
 router.post("/", verificarRol("admin", "profesor"), validarCreacionPrestamo, controller.crearPrestamo);
 
-// POST /api/prestamos/crear
-// Crear préstamo con búsqueda amigable
-router.post("/crear", verificarRol("admin", "profesor"), validarCreacionPrestamoConBusqueda, controller.crearPrestamoConBusqueda);
 
 //POST /api/prestamos/renovar/:id
 // Renovar un préstamo existente
@@ -80,6 +88,18 @@ router.get("/reservas/expiradas", verificarRol("admin", "profesor"), controller.
 // GET /api/prestamos/reservas/usuario/:usuarioId
 // Obtener reservas de un usuario específico
 router.get("/reservas/usuario/:usuarioId", verificarRol("admin", "profesor", "estudiantes"), controller.obtenerReservasPorUsuario);
+
+// GET /api/prestamos/reservas/mis-reservas
+// Obtener reservas del usuario autenticado
+router.get("/reservas/mis-reservas", verificarRol("admin", "profesor", "estudiante"), controller.obtenerMisReservas);
+
+// GET /api/prestamos/reservas/mis-reservas/vigentes
+// Obtener mis reservas vigentes
+router.get("/reservas/mis-reservas/vigentes", verificarRol("admin", "profesor", "estudiante"), controller.obtenerMisReservasVigentes);
+
+//GET /api/prestamos/reservas/mis-reservas/expiradas
+// Obtener mis reservas expiradas
+router.get("/reservas/mis-reservas/expiradas", verificarRol("admin", "profesor", "estudiante"), controller.obtenerMisReservasExpiradas);
 
 // GET /api/prestamos/reserva/:id
 // Obtener detalles de una reserva específica

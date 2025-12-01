@@ -1,3 +1,4 @@
+// src/modules/usuarios/usuario.controller.js
 const UsuarioService = require('./usuario.service');
 
 // Crear un nuevo usuario
@@ -45,6 +46,26 @@ exports.deshabilitarUsuario = async (req, res, next) => {
   try {
     const usuarioDeshabilitado = await UsuarioService.deshabilitarUsuario(req.params.id);
     res.json({success: true, data: usuarioDeshabilitado});
+  } catch (err) {
+    next(err);
+  }
+};
+
+// Obtener perfil del usuario autenticado
+exports.obtenerPerfilAutenticado = async (req, res, next) => {
+  try {
+    const usuario = await UsuarioService.obtenerUsuarioById(req.user.sub);
+    res.json({success: true, data: usuario});
+  } catch (err) {
+    next(err);
+  }
+};
+
+// Editar perfil del usuario autenticado
+exports.editarPerfilAutenticado = async (req, res, next) => {
+  try {
+    const usuarioActualizado = await UsuarioService.editarUsuario(req.user.sub, req.body);
+    res.json({success: true, data: usuarioActualizado});
   } catch (err) {
     next(err);
   }

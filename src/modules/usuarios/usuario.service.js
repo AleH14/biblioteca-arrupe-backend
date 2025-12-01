@@ -1,3 +1,4 @@
+// src/modules/usuarios/usuario.service.js
 const UsuarioRepository = require("./usuario.repository");
 const hash = require("../../core/utils/hash");
 

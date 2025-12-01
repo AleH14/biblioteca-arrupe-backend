@@ -1,3 +1,4 @@
+// src/modules/prestamos/prestamo.controller.js
 const PrestamoService = require("./prestamo.service");
 
 // Buscar préstamos por nombre de alumno
@@ -279,7 +280,7 @@ exports.obtenerDetallesReserva = async (req, res, next) => {
 // Crear una nueva reserva para un libro
 exports.reservarLibro = async (req, res, next) => {
   try {
-    const reserva = await PrestamoService.reservarLibro(req.body);
+    const reserva = await PrestamoService.reservarLibro(req.body, req.user.sub);
     
     res.status(201).json({
       success: true,
@@ -315,6 +316,71 @@ exports.cancelarReserva = async (req, res, next) => {
       success: true,
       data: resultado,
       message: "Reserva cancelada exitosamente"
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+
+// Obtener préstamos del usuario autenticado
+exports.obtenerPrestamosDelUsuario = async (req, res, next) => {
+  try {
+    const usuarioId = req.user.sub; 
+    const prestamos = await PrestamoService.obtenerPrestamosDelUsuario(usuarioId);
+    
+    res.json({
+      success: true,
+      data: prestamos,
+      total: prestamos.length
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// Obtener reservas del usuario autenticado
+exports.obtenerMisReservas = async (req, res, next) => {
+  try {
+    const usuarioId = req.user.sub; 
+    const reservas = await PrestamoService.obtenerReservasPorUsuario(usuarioId);
+    
+    res.json({
+      success: true,
+      data: reservas,
+      total: reservas.length
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// Obtener mis reservas vigentes
+exports.obtenerMisReservasVigentes = async (req, res, next) => {
+  try {
+    const usuarioId = req.user.sub; 
+    const reservas = await PrestamoService.obtenerReservasVigentesPorUsuario(usuarioId);
+    
+    res.json({
+      success: true,
+      data: reservas,
+      total: reservas.length
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// Obtener mis reservas expiradas
+exports.obtenerMisReservasExpiradas = async (req, res, next) => {
+  try {
+    const usuarioId = req.user.sub; 
+    const reservas = await PrestamoService.obtenerReservasExpiradasPorUsuario(usuarioId);
+    
+    res.json({
+      success: true,
+      data: reservas,
+      total: reservas.length
     });
   } catch (err) {
     next(err);

@@ -1,3 +1,4 @@
+// src/modules/prestamos/prestamo.service.js
 const PrestamoRepository = require("./prestamo.repository");
 const Libro = require("../libros/libro.model");
 const Usuario = require("../usuarios/usuario.model");
@@ -106,6 +107,55 @@ async obtenerPorClasificacion(clasificacion) {
     })
   );
 }
+
+  // Obtener por usuario autenticado
+  async obtenerPrestamosDelUsuario(usuarioId) {
+    const prestamos = await PrestamoRepository.obtenerPrestamosPorUsuario(usuarioId);
+
+    // Mapeo asíncrono con Promise.all
+    return Promise.all(
+      prestamos.map(async (prestamo) => {
+        const fechaActual = new Date();
+        let estadoCalculado = prestamo.estado;
+        let diasRetraso = 0;
+
+        let libro = await LibroRepository.findById(prestamo.libroId);
+        if(!libro) {
+          libro = await LibroRepository.findByEjemplarId(prestamo.ejemplarId);
+        }
+        const ejemplar = await LibroRepository.findEjemplarbyId(prestamo.ejemplarId);
+
+        // Determinar si está atrasado
+        if (prestamo.estado === 'activo' && fechaActual > prestamo.fechaDevolucionEstimada) {
+          estadoCalculado = 'atrasado';
+          diasRetraso = Math.floor(
+            (fechaActual - prestamo.fechaDevolucionEstimada) / (1000 * 60 * 60 * 24)
+          );
+        }
+
+        return {
+          id: prestamo._id,
+          libro: {
+            titulo: libro.titulo,
+            autor: libro.autor,
+            isbn: libro.isbn,
+          },
+          ejemplar: {
+              id: prestamo.ejemplarId,
+              cdu: ejemplar.cdu,
+              ubicacionFisica: ejemplar.ubicacionFisica,
+              edificio: ejemplar.edificio
+            },
+          reserva: prestamo.reserva,
+          fechaPrestamo: prestamo.fechaPrestamo,
+          fechaVencimiento: prestamo.fechaDevolucionEstimada,
+          fechaDevolucionReal: prestamo.fechaDevolucionReal,
+          estado: estadoCalculado,
+          diasRetraso: diasRetraso
+        };
+      })
+    );
+  }
 
 
   // Cambiar estado a cerrado/finalizado
@@ -476,7 +526,8 @@ async obtenerPorClasificacion(clasificacion) {
       },
       reserva: {
         fechaReserva: r.reserva.fechaReserva,
-        fechaExpiracion: r.reserva.fechaExpiracion
+        fechaExpiracion: r.reserva.fechaExpiracion,
+        estado: r.estado
       }
     };
   });
@@ -550,9 +601,9 @@ async obtenerTodasLasReservas() {
   }
 
   // Crear una nueva reserva para un libro
-  async reservarLibro(datosReserva) {
+  async reservarLibro(datosReserva, usuarioId) {
     //Crear prestamo de reserva
-    const { libroId, usuarioId, fechaExpiracion, tipoPrestamo} = datosReserva;
+    const { libroId, fechaExpiracion, tipoPrestamo} = datosReserva;
 
     const fechaExpiracionDate = new Date(fechaExpiracion);
 
@@ -661,6 +712,28 @@ async obtenerTodasLasReservas() {
       estado: prestamoCancelado.estado,
       mensaje: "Reserva cancelada exitosamente"
     };
+  }
+
+  // Obtener resesrvas vigentes de un usuario
+  async obtenerReservasVigentesPorUsuario(usuarioId) {
+    const reservas = await PrestamoRepository.obtenerReservasPorUsuario(usuarioId);
+
+    // Filtrar solo reservas vigentes
+    const reservasVigentes = reservas.filter(r => r.estado === 'reserva' && 
+      r.reserva.fechaExpiracion >= new Date());
+
+    return await this.mapearReservas(reservasVigentes);
+  }
+
+  // Obtener resesrvas expiradas de un usuario
+  async obtenerReservasExpiradasPorUsuario(usuarioId) {
+    const reservas = await PrestamoRepository.obtenerReservasPorUsuario(usuarioId);
+
+    // Filtrar solo reservas expiradas
+    const reservasExpiradas = reservas.filter(r => r.estado === 'reserva' && 
+      r.reserva.fechaExpiracion < new Date());
+
+    return await this.mapearReservas(reservasExpiradas);
   }
 
 }

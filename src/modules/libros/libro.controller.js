@@ -1,3 +1,4 @@
+// src/modules/libros/libro.controller.js
 const LibroService = require("./libro.service");
 
 exports.getLibros = async (req, res, next) => {
