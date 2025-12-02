@@ -461,12 +461,17 @@ describe('PrestamoService', () => {
 
         const resultado = await PrestamoService.reservarLibro({
           libroId: 'lX',
-          usuarioId: 'uX',
           fechaExpiracion: fechaExp.toISOString(),
           tipoPrestamo: 'reserva'
-        });
+        }, 'uX'); // usuarioId como segundo parámetro
 
-        expect(PrestamoService.crearPrestamoConBusqueda).toHaveBeenCalled();
+        expect(PrestamoService.crearPrestamoConBusqueda).toHaveBeenCalledWith({
+          libroId: 'lX',
+          usuarioId: 'uX',
+          fechaPrestamo: null,
+          fechaDevolucionEstimada: null,
+          tipoPrestamo: 'reserva'
+        });
         expect(PrestamoRepository.obtenerPorId).toHaveBeenCalledWith('prest-123');
         expect(PrestamoRepository.cambiarEstadoPrestamo).toHaveBeenCalledWith('prest-123', 'reserva');
         expect(PrestamoRepository.crearReserva).toHaveBeenCalled();
@@ -502,9 +507,9 @@ describe('PrestamoService', () => {
         await expect(
           PrestamoService.reservarLibro({
             libroId: 'lX',
-            usuarioId: 'uX',
-            fechaExpiracion: new Date().toISOString()
-          })
+            fechaExpiracion: new Date().toISOString(),
+            tipoPrestamo: 'reserva'
+          }, 'uX') // usuarioId como segundo parámetro
         ).rejects.toThrow('No se pudo obtener el id del préstamo creado');
       });
 
@@ -515,9 +520,9 @@ describe('PrestamoService', () => {
         await expect(
           PrestamoService.reservarLibro({
             libroId: 'lX',
-            usuarioId: 'uX',
-            fechaExpiracion: new Date().toISOString()
-          })
+            fechaExpiracion: new Date().toISOString(),
+            tipoPrestamo: 'reserva'
+          }, 'uX') // usuarioId como segundo parámetro
         ).rejects.toThrow('Préstamo no encontrado');
       });
     });
