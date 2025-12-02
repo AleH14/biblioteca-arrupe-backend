@@ -28,7 +28,7 @@ router.get("/", verificarRol("admin"), controller.buscarUsuarios);
 router.get("/:id", verificarRol("admin", "profesor"), controller.obtenerUsuarioById);
 
 // Actualizar usuario por ID
-router.put("/:id", verificarRol("admin", "profesor"), validarEdicionUsuario, controller.editarUsuario);
+router.put("/:id", verificarRol("admin"), validarEdicionUsuario, controller.editarUsuario);
 
 // Deshabilitar usuario por ID
 router.delete("/:id", verificarRol("admin"), controller.deshabilitarUsuario);

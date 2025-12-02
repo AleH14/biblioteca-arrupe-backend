@@ -124,6 +124,11 @@ async obtenerPorClasificacion(clasificacion) {
           libro = await LibroRepository.findByEjemplarId(prestamo.ejemplarId);
         }
         const ejemplar = await LibroRepository.findEjemplarbyId(prestamo.ejemplarId);
+        if (!ejemplar) {
+          const error = new Error("Ejemplar no encontrado para el préstamo");
+          error.status = 404;
+          throw error;
+        }
 
         // Determinar si está atrasado
         if (prestamo.estado === 'activo' && fechaActual > prestamo.fechaDevolucionEstimada) {
@@ -714,7 +719,7 @@ async obtenerTodasLasReservas() {
     };
   }
 
-  // Obtener resesrvas vigentes de un usuario
+  // Obtener reservas vigentes de un usuario
   async obtenerReservasVigentesPorUsuario(usuarioId) {
     const reservas = await PrestamoRepository.obtenerReservasPorUsuario(usuarioId);
 
@@ -725,7 +730,7 @@ async obtenerTodasLasReservas() {
     return await this.mapearReservas(reservasVigentes);
   }
 
-  // Obtener resesrvas expiradas de un usuario
+  // Obtener reservas expiradas de un usuario
   async obtenerReservasExpiradasPorUsuario(usuarioId) {
     const reservas = await PrestamoRepository.obtenerReservasPorUsuario(usuarioId);
 

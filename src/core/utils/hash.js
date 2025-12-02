@@ -4,11 +4,15 @@
 const bcrypt = require('bcrypt');
 
 async function hashPassword(password) {
-  return bcrypt.hash(password, 10);
+  if (!password || typeof password !== 'string') {
+    throw new Error('La contraseña debe ser una cadena de texto válida');
+  }
 }
 
 async function comparePassword(password, hashed) {
-  return bcrypt.compare(password, hashed);
+  if (!password || typeof password !== 'string' || !hashed || typeof hashed !== 'string') {
+    throw new Error('La contraseña y el hash deben ser cadenas de texto válidas');
+  }
 }
 
 module.exports = { hashPassword, comparePassword };
