@@ -7,6 +7,7 @@ async function hashPassword(password) {
   if (!password || typeof password !== 'string') {
     throw new Error('La contraseña debe ser una cadena de texto válida');
   }
+  return bcrypt.hash(password, 10);
 }
 
 async function comparePassword(password, hashed) {

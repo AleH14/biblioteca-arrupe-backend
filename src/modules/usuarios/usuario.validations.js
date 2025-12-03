@@ -11,7 +11,7 @@ async function validarNombre(nombre, errores) {
     }
 
     const usuarioPorNombre = await UsuarioRepository.findByNameExact(nombre);
-    if (usuarioPorNombre.length > 0) {
+    if (usuarioPorNombre) {
         errores.push("El nombre ya está en uso");
     }
 }
@@ -25,7 +25,7 @@ async function validarEmail(email, errores) {
     }
 
     const usuarioPorEmail = await UsuarioRepository.findByEmailExact(email);
-    if (usuarioPorEmail.length > 0) {
+    if (usuarioPorEmail) {
         errores.push("El email ya está en uso");
     }
 }
@@ -66,7 +66,7 @@ module.exports.validarCreacionUsuario = async (req, res, next) => {
     await validarNombre(nombre, errores);
     await validarEmail(email, errores);
     validarPassword(password, errores);
-    validarRol(rol, errores);
+    validarRol(rol, req.user.rol, errores);
     if(telefono) validarTelefono(telefono, errores);
 
     if (errores.length > 0) {
@@ -82,7 +82,7 @@ module.exports.validarCreacionUsuario = async (req, res, next) => {
 
 
 module.exports.validarEdicionUsuario = async (req, res, next) => {
-    const { nombre, email, password, rol, telefono} = req.body;
+    const { nombre, email, password, rol, telefono, activo} = req.body;
     const errores = [];
     const usuarioExistente = await UsuarioRepository.findById(req.params.id) || await UsuarioRepository.findById(req.user.sub);
     if (!usuarioExistente) {
@@ -98,6 +98,8 @@ module.exports.validarEdicionUsuario = async (req, res, next) => {
     if (password) validarPassword(password, errores);
     if (rol) validarRol(rol, req.user.rol, errores);  
     if (telefono) validarTelefono(telefono, errores);
+    if(activo && req.user.rol != "admin") 
+        errores.push(`Solo un administrador puede modificar el estado del usuario`)
 
     if (errores.length > 0) {
         return res.status(400).json({
