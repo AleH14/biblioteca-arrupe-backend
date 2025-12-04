@@ -1,3 +1,4 @@
+// src/modules/prestamos/prestamo.repository.js
 const mongoose = require("mongoose");
 
 const usuarioSchema = new mongoose.Schema({

@@ -1,4 +1,5 @@
 // Validaciones para el módulo de préstamos
+const {isValidObjectId} = require("./../../core/middlewares/mongoose.middleware")
 
 const validarCreacionPrestamo = (req, res, next) => {
   const { libroId, usuarioId, fechaDevolucionEstimada, tipoPrestamo } = req.body;
@@ -161,11 +162,6 @@ const validarCreacionPrestamoConBusqueda = (req, res, next) => {
   next();
 };
 
-// Función auxiliar para validar ObjectId de MongoDB
-function isValidObjectId(id) {
-  const mongoose = require('mongoose');
-  return mongoose.Types.ObjectId.isValid(id);
-}
 
 module.exports = {
   validarCreacionPrestamo,

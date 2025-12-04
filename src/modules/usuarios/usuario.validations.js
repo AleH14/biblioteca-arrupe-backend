@@ -1,4 +1,5 @@
 const UsuarioRepository = require("./usuario.repository");
+const {isValidObjectId} = require("./../../core/middlewares/mongoose.middleware")
 
 // -----------------------------------
 // Helpers de validación
@@ -83,8 +84,15 @@ module.exports.validarCreacionUsuario = async (req, res, next) => {
 
 module.exports.validarEdicionUsuario = async (req, res, next) => {
     const { nombre, email, password, rol, telefono, activo} = req.body;
+    const id = req.params.id;
     const errores = [];
-    const usuarioExistente = await UsuarioRepository.findById(req.params.id) || await UsuarioRepository.findById(req.user.sub);
+    if(!id || !isValidObjectId(id)){
+        return res.status(400).json({
+            success: false,
+            message: "No se entregó un id válido"
+        });
+    }
+    const usuarioExistente = await UsuarioRepository.findById(id) || await UsuarioRepository.findById(req.user.sub);
     if (!usuarioExistente) {
         return res.status(404).json({
             success: false,
