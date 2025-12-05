@@ -1,3 +1,4 @@
+// src/modules/libros/libro.model.js
 const mongoose = require("mongoose");
 
 const ejemplarSchema = new mongoose.Schema({

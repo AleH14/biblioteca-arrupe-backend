@@ -1,9 +1,8 @@
 // src/modules/prestamos/prestamo.service.js
-const PrestamoRepository = require("./prestamo.repository");
+const PrestamoRepository = require("../prestamos/prestamo.repository");
 const Libro = require("../libros/libro.model");
 const Usuario = require("../usuarios/usuario.model");
 const LibroRepository = require("../libros/libro.repository");
-const mongoose = require("mongoose");
 
 class PrestamoService {
 
