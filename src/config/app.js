@@ -6,7 +6,7 @@ const auth = require('../modules/auth');
 const libros = require('../modules/libros');
 const prestamos = require('../modules/prestamos');
 const usuarios = require('../modules/usuarios');
-const estadisiticas = require('../modules/estadisticas')
+const estadisticas = require('../modules/estadisticas');
 const requestLogger = require("../core/middlewares/requestLogger.middleware");
 const logger = require("../core/utils/logger");
 
@@ -55,7 +55,7 @@ app.use('/api/auth', auth.routes);
 app.use('/api/libros', libros.routes);
 app.use('/api/prestamos', prestamos.routes);
 app.use('/api/usuarios', usuarios.routes);
-app.use('/api/estadisticas', estadisiticas.routes)
+app.use('/api/estadisticas', estadisticas.routes);
 
 // Middleware global de manejo de errores
 app.use((err, req, res, next) => {

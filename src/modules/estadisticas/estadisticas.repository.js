@@ -2,7 +2,6 @@
 
 const Libro = require("../libros/libro.model");
 const Prestamo = require("../prestamos/prestamo.model");
-const Usuario = require("../usuarios/usuario.model");
 const mongoose = require("mongoose");
 
 class EstadisticasRepository {

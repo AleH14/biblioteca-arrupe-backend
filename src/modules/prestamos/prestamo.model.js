@@ -1,4 +1,4 @@
-// src/modules/prestamos/prestamo.repository.js
+// src/modules/prestamos/prestamo.model.js 
 const mongoose = require("mongoose");
 
 const notificacionSchema = new mongoose.Schema({

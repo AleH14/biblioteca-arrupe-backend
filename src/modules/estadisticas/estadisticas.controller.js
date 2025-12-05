@@ -30,7 +30,7 @@ exports.getTendencias = async (req, res, next) => {
 exports.getLibrosPorOrden = async (req, res, next) => {
     try {
         const orden = req.query.orden;
-        const limite = req.query.limite;
+        const limite = req.query.limite ? parseInt(req.query.limite, 10) : undefined;
         const resultado = await EstadisticasService.obtenerLibrosPorOrden(orden, limite);
         res.json({
           success: true,

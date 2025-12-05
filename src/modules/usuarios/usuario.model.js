@@ -1,4 +1,4 @@
-// src/modules/prestamos/prestamo.repository.js
+// src/modules/usuarios/usuario.model.js  
 const mongoose = require("mongoose");
 
 const usuarioSchema = new mongoose.Schema({

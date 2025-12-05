@@ -68,16 +68,6 @@ describe("EstadisticasService", () => {
   describe("obtenerTendencias", () => {
     it("debería retornar tendencias para período hoy", async () => {
       const mockPeriodo = "hoy";
-      const mockTendencias = [
-        {
-          periodo: "00:00",
-          librosTotales: 2,
-          prestamosTotales: 5,
-          prestamosActivos: 1,
-          reservasTotales: 3,
-          reservasActivas: 1
-        }
-      ];
 
       // Mock de las funciones del repositorio para cada rango
       EstadisticasRepository.librosTotales.mockResolvedValue(2);

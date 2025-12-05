@@ -1,4 +1,4 @@
-//src/core/middleware/mongoose.middleware.js
+//src/core/middlewares/mongoose.middleware.js  
 
 // Función auxiliar para validar ObjectId de MongoDB
 exports.isValidObjectId = (id) => {

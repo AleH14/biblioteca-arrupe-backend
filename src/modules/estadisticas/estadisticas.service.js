@@ -48,7 +48,6 @@ function obtenerRangosTendencias(periodo) {
 
         // --- HOY: intervalos de 2 horas ---
         case "hoy": {
-            const inicioDia = new Date(year, month, day, 0, 0, 0);
             for (let h = 0; h < 24; h += 2) {
                 const desde = new Date(year, month, day, h, 0, 0);
                 const hasta = new Date(year, month, day, h + 2, 0, 0);
