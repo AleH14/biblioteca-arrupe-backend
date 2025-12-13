@@ -29,6 +29,7 @@ describe("Modelo Prestamo", () => {
     // Crear el préstamo
     const prestamo = await Prestamo.create({
       ejemplarId,
+      libroId: libro._id,
       usuarioId: usuario._id,
       fechaPrestamo: new Date("2025-08-20"),
       fechaDevolucionEstimada: new Date("2025-09-20"),

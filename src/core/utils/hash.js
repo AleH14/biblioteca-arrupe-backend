@@ -14,6 +14,8 @@ async function comparePassword(password, hashed) {
   if (!password || typeof password !== 'string' || !hashed || typeof hashed !== 'string') {
     throw new Error('La contraseña y el hash deben ser cadenas de texto válidas');
   }
+  const match = await bcrypt.compare(password, hashed);
+  return match;
 }
 
 module.exports = { hashPassword, comparePassword };
