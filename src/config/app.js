@@ -9,6 +9,7 @@ const usuarios = require('../modules/usuarios');
 const estadisticas = require('../modules/estadisticas');
 const requestLogger = require("../core/middlewares/requestLogger.middleware");
 const logger = require("../core/utils/logger");
+const cookieParser = require("cookie-parser");
 
 // Configuración de CORS
 const corsOptions = {
@@ -29,6 +30,7 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json());
 app.use(requestLogger); 
+app.use(cookieParser()); 
 
 
 // Health check endpoint
