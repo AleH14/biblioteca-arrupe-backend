@@ -42,13 +42,12 @@ exports.logout = async (req, res, next) => {
   try {
     const usuarioId = req.user.sub;
     const result = await AuthService.logout(usuarioId);
-    res.clearCookie("refreshToken", {path: "/api/auth/refreshToken"});
+    res.clearCookie("refreshToken", {path: "/"});
     res.json({
       success: true,
       data: result,
       mensaje: "Cierre de sesión exitoso"
-    })
-    res.status(204).send();
+    });
   } catch (err) {
     next(err);
   }

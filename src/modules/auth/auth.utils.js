@@ -92,8 +92,8 @@ exports.refreshToken = async (usuario, ip, userAgent) => {
     const cookies = {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
-        sameSite: "strict",
-        path: "/api/auth/refreshToken",
+        sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
+        path: "/",  // Cambiar de /api/auth/refreshToken a / para desarrollo
         maxAge: ms(REFRESH_JWT_EXPIRES_IN)
     }
 
