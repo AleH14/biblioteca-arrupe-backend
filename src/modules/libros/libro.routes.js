@@ -12,24 +12,24 @@ router.use(authMiddleware.verifyToken);
 
 // Rutas para categorías
 
-router.get("/categorias", verificarRol("admin", "profesor", "estudiante"), controller.getAllCategorias);
-router.get("/categorias/:id", verificarRol("admin", "profesor", "estudiante"), controller.getCategoriaById);
-router.post("/categorias", verificarRol("admin", "profesor"), controller.createCategoria);
-router.put("/categorias/:id", verificarRol("admin", "profesor"), controller.updateCategoria);
-router.delete("/categorias/:id", verificarRol("admin", "profesor"), controller.deleteCategoria);
+router.get("/categorias", verificarRol("admin", "consultor", "docente", "estudiante"), controller.getAllCategorias);
+router.get("/categorias/:id", verificarRol("admin", "consultor", "docente", "estudiante"), controller.getCategoriaById);
+router.post("/categorias", verificarRol("admin"), controller.createCategoria);
+router.put("/categorias/:id", verificarRol("admin"), controller.updateCategoria);
+router.delete("/categorias/:id", verificarRol("admin"), controller.deleteCategoria);
 
 // Rutas para libros
 
-router.get("/", verificarRol("admin", "profesor", "estudiante"), controller.getLibros);
-router.get("/:id", verificarRol("admin", "profesor", "estudiante"), controller.getLibroById);
-router.post("/", verificarRol("admin", "profesor"), controller.createLibro);
-router.put("/:id", verificarRol("admin", "profesor"), controller.updateLibro);
-router.delete("/:id", verificarRol("admin", "profesor"), controller.deleteLibro);
+router.get("/", verificarRol("admin", "consultor", "docente", "estudiante"), controller.getLibros);
+router.get("/:id", verificarRol("admin", "consultor", "docente", "estudiante"), controller.getLibroById);
+router.post("/", verificarRol("admin"), controller.createLibro);
+router.put("/:id", verificarRol("admin"), controller.updateLibro);
+router.delete("/:id", verificarRol("admin"), controller.deleteLibro);
 
 // Rutas para gestión de ejemplares
 
-router.post("/:libroId/ejemplares", verificarRol("admin", "profesor"), controller.addEjemplar);
-router.delete("/:libroId/ejemplares/:ejemplarId", verificarRol("admin", "profesor"), controller.removeEjemplar);
+router.post("/:libroId/ejemplares", verificarRol("admin"), controller.addEjemplar);
+router.delete("/:libroId/ejemplares/:ejemplarId", verificarRol("admin"), controller.removeEjemplar);
 
 
 module.exports = router;    
