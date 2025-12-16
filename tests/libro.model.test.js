@@ -34,7 +34,7 @@ describe("Modelo Libro", () => {
         categoria: categoria,
         editorial: "Editorial",
         isbn: "1234567890",
-        precio: -10,
+        ejemplares: {cdu: "FIC-GAR-002", estado: "disponible", ubicacionFisica: "Estante A-2", edificio: "Principal", origen: "Comprado", precio: -1},
         titulo: "Libro inválido"
       });
     } catch (err) {
