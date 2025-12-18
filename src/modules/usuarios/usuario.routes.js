@@ -16,16 +16,16 @@ router.post("/crear-usuario", verificarRol("admin"), validarCreacionUsuario, con
 
 
 // Obtener perfil del usuario autenticado
-router.get("/perfil", verificarRol("admin", "profesor", "estudiante"), controller.obtenerPerfilAutenticado);
+router.get("/perfil", verificarRol("admin", "consultor", "docente", "estudiante"), controller.obtenerPerfilAutenticado);
 
 // Actualizar perfil del usuario autenticado
-router.put("/perfil", verificarRol("admin", "profesor", "estudiante"), validarEdicionUsuario, controller.editarPerfilAutenticado);
+router.put("/perfil", verificarRol("admin", "consultor", "docente", "estudiante"), validarEdicionUsuario, controller.editarPerfilAutenticado);
 
 // Buscar usuarios por nombre o email
 router.get("/", verificarRol("admin"), controller.buscarUsuarios);
 
 // Ver detalles de un usuario por ID
-router.get("/:id", verificarRol("admin", "profesor"), controller.obtenerUsuarioById);
+router.get("/:id", verificarRol("admin"), controller.obtenerUsuarioById);
 
 // Actualizar usuario por ID
 router.put("/:id", verificarRol("admin"), validarEdicionUsuario, controller.editarUsuario);

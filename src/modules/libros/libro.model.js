@@ -10,7 +10,9 @@ const ejemplarSchema = new mongoose.Schema({
   },
   ubicacionFisica: { type: String},
   edificio: { type: String},
-  origen: { type: String, enum: ["Comprado", "Donado"], required: true }
+  origen: { type: String, enum: ["Comprado", "Donado"], required: true },
+  precio: { type: Number, min: 0 },
+  donado_por: { type: String }
 }, { _id: true }); // Mongoose crea _id automático
 
 
@@ -22,7 +24,6 @@ const libroSchema = new mongoose.Schema({
   imagenURL: { type: String, default: null },
   isbn: { type: String, required: true, unique: true },
   editorial: { type: String },
-  precio: { type: Number, min: 0 },
   titulo: { type: String, required: true },
   disponibilidad: { type: Boolean, default: true },
 }, { timestamps: true });

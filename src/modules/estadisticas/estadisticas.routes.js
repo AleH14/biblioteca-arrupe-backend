@@ -13,21 +13,21 @@ router.use(authMiddleware.verifyToken);
 
 // GET api/estadisticas/libros/categoria-porcentaje
 // Obtener metricas de categoria
-router.get("/categorias", verificarRol("admin", "profesor"), controller.getMetricasCategoria);
+router.get("/categorias", verificarRol("admin", "consultor"), controller.getMetricasCategoria);
 
 // GET api/estadisticas/metricas
-router.get("/metricas", verificarRol("admin", "profesor"), validarPeriodo, controller.getMetricas);
+router.get("/metricas", verificarRol("admin", "consultor"), validarPeriodo, controller.getMetricas);
 
 // GET api/estadisticas/tendencias
-router.get("/tendencias", verificarRol("admin", "profesor"), validarPeriodo, controller.getTendencias);
+router.get("/tendencias", verificarRol("admin", "consultor"), validarPeriodo, controller.getTendencias);
 
 // GET api/estadisticas/libros/top?orden=
 // Obtener libros más/menos prestados
-router.get("/libros/top", verificarRol("admin", "profesor"), controller.getLibrosPorOrden);
+router.get("/libros/top", verificarRol("admin", "consultor"), controller.getLibrosPorOrden);
 
 // GET api/estadisticas/libro
 // Obtener estadísticas de un libro específico
-router.get("/libro", verificarRol("admin", "profesor"), controller.getEstadisticasLibro);
+router.get("/libro", verificarRol("admin", "consultor"), controller.getEstadisticasLibro);
 
 module.exports = router;    
 
