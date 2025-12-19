@@ -25,15 +25,15 @@ router.use(verifyToken);
 
 // GET /api/prestamos/buscar?nombre=NombreAlumno
 // Buscar préstamos por nombre de alumno
-router.get("/buscar", verificarRol("admin", "consultor"), controller.buscarPorNombreAlumno);
+router.get("/buscar", verificarRol("admin", "consultor", "bibliotecario"), controller.buscarPorNombreAlumno);
 
 // GET /api/prestamos/buscar-libros?nombre=NombreLibro
 // Buscar libros disponibles para préstamo
-router.get("/buscar-libros", verificarRol("admin", "consultor", "docente", "estudiante"), controller.buscarLibrosParaPrestamo);
+router.get("/buscar-libros", verificarRol("admin", "consultor", "bibliotecario", "docente", "estudiante"), controller.buscarLibrosParaPrestamo);
 
 // GET /api/prestamos/buscar-usuarios?nombre=NombreUsuario
 // Buscar usuarios para préstamo
-router.get("/buscar-usuarios", verificarRol("admin", "consultor"), controller.buscarUsuariosParaPrestamo);
+router.get("/buscar-usuarios", verificarRol("admin", "consultor", "bibliotecario"), controller.buscarUsuariosParaPrestamo);
 
 // =======================
 // Resúmenes y listados
@@ -41,23 +41,23 @@ router.get("/buscar-usuarios", verificarRol("admin", "consultor"), controller.bu
 
 // GET /api/prestamos/resumen
 // Obtener resumen de préstamos
-router.get("/resumen", verificarRol("admin", "consultor"), controller.obtenerResumen);
+router.get("/resumen", verificarRol("admin", "consultor", "bibliotecario"), controller.obtenerResumen);
 
 // GET /api/prestamos/mis-prestamos
 // Obtener préstamos del usuario autenticado
-router.get("/mis-prestamos", verificarRol("admin", "consultor", "docente", "estudiante"), controller.obtenerPrestamosDelUsuario);
+router.get("/mis-prestamos", verificarRol("admin", "consultor", "bibliotecario", "docente", "estudiante"), controller.obtenerPrestamosDelUsuario);
 
 // GET /api/prestamos/estado/:estado
 // Obtener préstamos por clasificación: todos, activos, atrasados, cerrados
-router.get("/estado/:estado", verificarRol("admin", "consultor"), validarEstado, controller.obtenerPorEstado);
+router.get("/estado/:estado", verificarRol("admin", "consultor", "bibliotecario"), validarEstado, controller.obtenerPorEstado);
 
 // PUT /api/prestamos/:id/cerrar
 // Cambiar estado del préstamo a cerrado/finalizado
-router.put("/:id/cerrar", verificarRol("admin"), validarCierrePrestamo, controller.cerrarPrestamo);
+router.put("/:id/cerrar", verificarRol("admin", "bibliotecario"), validarCierrePrestamo, controller.cerrarPrestamo);
 
 // POST /api/prestamos/crear
 // Crear préstamo con búsqueda amigable
-router.post("/crear", verificarRol("admin"), validarCreacionPrestamoConBusqueda, controller.crearPrestamoConBusqueda);
+router.post("/crear", verificarRol("admin", "bibliotecario"), validarCreacionPrestamoConBusqueda, controller.crearPrestamoConBusqueda);
 
 // =======================
 // Reservas (más específicas primero)
@@ -65,15 +65,15 @@ router.post("/crear", verificarRol("admin"), validarCreacionPrestamoConBusqueda,
 
 //GET /api/prestamos/reservas
 // Obtener todas las reservas
-router.get("/reservas", verificarRol("admin", "consultor"), controller.obtenerTodasLasReservas);
+router.get("/reservas", verificarRol("admin", "consultor", "bibliotecario"), controller.obtenerTodasLasReservas);
 
 // GET /api/prestamos/reservas/vigentes
 // Obtener todas las reservas vigentes
-router.get("/reservas/vigentes", verificarRol("admin", "consultor"), controller.obtenerReservasVigentes);
+router.get("/reservas/vigentes", verificarRol("admin", "consultor", "bibliotecario"), controller.obtenerReservasVigentes);
 
 // GET /api/prestamos/reservas/expiradas
 // Obtener todas las reservas expiradas
-router.get("/reservas/expiradas", verificarRol("admin", "consultor"), controller.obtenerReservasExpiradas);
+router.get("/reservas/expiradas", verificarRol("admin", "consultor", "bibliotecario"), controller.obtenerReservasExpiradas);
 
 // GET /api/prestamos/reservas/mis-reservas/vigentes
 // Obtener mis reservas vigentes
@@ -101,15 +101,15 @@ router.post("/reservar-libro", verificarRol("admin", "consultor", "docente", "es
 
 // POST /api/prestamos/:id/activar-reserva
 // Activar una reserva y convertirla en préstamo
-router.post("/:id/activar-reserva", validarId, verificarRol("admin"), controller.activarReserva);
+router.post("/:id/activar-reserva", validarId, verificarRol("admin", "bibliotecario"), controller.activarReserva);
 
 // POST /api/prestamos/:id/cancelar-reserva
 // Cancelar una reserva existente
-router.post("/:id/cancelar-reserva", verificarRol("admin", "consultor", "docente", "estudiante"), validarId, controller.cancelarReserva);
+router.post("/:id/cancelar-reserva", verificarRol("admin", "consultor", "bibliotecario", "docente", "estudiante"), validarId, controller.cancelarReserva);
 
 //POST /api/prestamos/renovar/:id
 // Renovar un préstamo existente
-router.post("/renovar/:id", verificarRol("admin"), validarId, controller.renovarPrestamo);
+router.post("/renovar/:id", verificarRol("admin", "bibliotecario"), validarId, controller.renovarPrestamo);
 
 // =======================
 // Rutas generales al final
@@ -117,14 +117,14 @@ router.post("/renovar/:id", verificarRol("admin"), validarId, controller.renovar
 
 // GET /api/prestamos/:id
 // Obtener detalles de un préstamo específico
-router.get("/:id", verificarRol("admin", "consultor", "docente", "estudiante"), validarId, controller.obtenerDetalles);
+router.get("/:id", verificarRol("admin", "consultor", "bibliotecario", "docente", "estudiante"), validarId, controller.obtenerDetalles);
 
 // GET /api/prestamos
 // Obtener todos los préstamos
-router.get("/", verificarRol("admin", "consultor"), controller.obtenerTodos);
+router.get("/", verificarRol("admin", "consultor", "bibliotecario"), controller.obtenerTodos);
 
 // POST /api/prestamos
 // Crear nuevo préstamo (método original con IDs)
-router.post("/", verificarRol("admin"), validarCreacionPrestamo, controller.crearPrestamo);
+router.post("/", verificarRol("admin", "bibliotecario"), validarCreacionPrestamo, controller.crearPrestamo);
 
 module.exports = router;

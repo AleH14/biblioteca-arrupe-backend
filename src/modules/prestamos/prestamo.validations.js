@@ -58,7 +58,7 @@ const validarCierrePrestamo = (req, res, next) => {
   }
 
   // Validar fechaDevolucionReal si se proporciona
-  if (req.body.fechaDevolucionReal) {
+  if (req.body && req.body.fechaDevolucionReal) {
     const fecha = new Date(req.body.fechaDevolucionReal);
     if (isNaN(fecha.getTime())) {
       errores.push("La fechaDevolucionReal no es una fecha válida");

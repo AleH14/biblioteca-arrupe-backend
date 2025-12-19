@@ -47,7 +47,7 @@ exports.obtenerPorEstado = async (req, res, next) => {
 exports.cerrarPrestamo = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { fechaDevolucionReal } = req.body;
+    const { fechaDevolucionReal } = req.body || {};
     
     const resultado = await PrestamoService.cerrarPrestamo(id, fechaDevolucionReal);
     

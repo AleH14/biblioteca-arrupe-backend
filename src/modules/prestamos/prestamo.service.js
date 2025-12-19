@@ -504,6 +504,39 @@ async obtenerPorClasificacion(clasificacion) {
     };
   }
 
+  // Cerrar préstamo (registrar devolución)
+  async cerrarPrestamo(prestamoId, fechaDevolucionReal) {
+    const prestamo = await PrestamoRepository.obtenerPorId(prestamoId);
+    
+    if (!prestamo) {
+      throw new Error("Préstamo no encontrado");
+    }
+
+    if (prestamo.estado === 'cerrado') {
+      throw new Error("El préstamo ya está cerrado");
+    }
+
+    if (prestamo.estado === 'reserva') {
+      throw new Error("No se puede cerrar una reserva. Primero debe activarla como préstamo");
+    }
+
+    // Si no se proporciona fecha, usar la fecha actual
+    const fechaDevolucion = fechaDevolucionReal ? new Date(fechaDevolucionReal) : new Date();
+
+    // Cerrar el préstamo
+    const prestamoCerrado = await PrestamoRepository.finalizarPrestamo(prestamoId, fechaDevolucion);
+
+    // Cambiar el estado del ejemplar a "disponible"
+    await LibroRepository.setEjemplarDisponibilidad(prestamo.ejemplarId, 'disponible');
+
+    return {
+      id: prestamoCerrado._id,
+      estado: prestamoCerrado.estado,
+      fechaDevolucionReal: prestamoCerrado.fechaDevolucionReal,
+      mensaje: "Préstamo cerrado exitosamente"
+    };
+  }
+
   // Mapeo de todas las reservas
   async mapearReservas(reservas) {
     return reservas.map(r => {
