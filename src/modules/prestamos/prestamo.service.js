@@ -316,7 +316,7 @@ async obtenerPorClasificacion(clasificacion) {
     const libros = await Libro.find({
       $or: [
         { titulo: regex },
-        { autor: regex }
+        { 'ejemplares.cdu': regex }
       ]
     }).populate('categoria', 'nombre');
 
