@@ -20,6 +20,11 @@ class PrestamoService {
                         new Date() > prestamo.fechaDevolucionEstimada;
       const ejemplar = prestamo.libroId.ejemplares.id(prestamo.ejemplarId);
       
+      // Si el ejemplar fue eliminado, saltar este préstamo
+      if (!ejemplar) {
+        return null;
+      }
+      
       return {
         id: prestamo._id,
         alumno: {
@@ -43,7 +48,7 @@ class PrestamoService {
         diasRetraso: esAtrasado ? 
           Math.floor((new Date() - prestamo.fechaDevolucionEstimada) / (1000 * 60 * 60 * 24)) : 0
       };
-    });
+    }).filter(p => p !== null);
   }
 
 
@@ -69,6 +74,11 @@ async obtenerPorClasificacion(clasificacion) {
         libro = await LibroRepository.findByEjemplarId(prestamo.ejemplarId);
       }
       const ejemplar = await LibroRepository.findEjemplarbyId(prestamo.ejemplarId);
+
+      // Si el libro o ejemplar fueron eliminados, saltar este préstamo
+      if (!libro || !ejemplar) {
+        return null;
+      }
 
       // Determinar si está atrasado
       if (prestamo.estado === 'activo' && fechaActual > prestamo.fechaDevolucionEstimada) {
@@ -104,7 +114,7 @@ async obtenerPorClasificacion(clasificacion) {
         diasRetraso: diasRetraso
       };
     })
-  );
+  ).then(prestamos => prestamos.filter(p => p !== null));
 }
 
   // Obtener por usuario autenticado
@@ -123,10 +133,10 @@ async obtenerPorClasificacion(clasificacion) {
           libro = await LibroRepository.findByEjemplarId(prestamo.ejemplarId);
         }
         const ejemplar = await LibroRepository.findEjemplarbyId(prestamo.ejemplarId);
-        if (!ejemplar) {
-          const error = new Error("Ejemplar no encontrado para el préstamo");
-          error.status = 404;
-          throw error;
+        
+        // Si el libro o ejemplar fueron eliminados, saltar este préstamo
+        if (!libro || !ejemplar) {
+          return null;
         }
 
         // Determinar si está atrasado
@@ -158,7 +168,7 @@ async obtenerPorClasificacion(clasificacion) {
           diasRetraso: diasRetraso
         };
       })
-    );
+    ).then(prestamos => prestamos.filter(p => p !== null));
   }
 
 
