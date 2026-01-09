@@ -40,7 +40,7 @@ class UsuarioService {
             usuarios = await UsuarioRepository.findAll();
         }
 
-        usuarios = Promise.all(usuarios.map(u => this._sanitizeUsuario(u)));
+        usuarios = await Promise.all(usuarios.map(u => this._sanitizeUsuario(u)));
         return usuarios;
     }
 
