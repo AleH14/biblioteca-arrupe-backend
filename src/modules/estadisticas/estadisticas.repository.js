@@ -6,53 +6,66 @@ const mongoose = require("mongoose");
 
 class EstadisticasRepository {
 
-    // 📘 Total de libros creados en el periodo
+    // 📘 Total de libros (usa fechaRegistro)
     async librosTotales(periodo) {
-        return await Libro.countDocuments(periodo);
+        const filtro = periodo.createdAt
+            ? { fechaRegistro: periodo.createdAt }
+            : {};
+        return await Libro.countDocuments(filtro);
     }
 
-    // 📗 Total de reservas realizadas por periodo
-    // estado === "reserva"
+    // 📗 Total de reservas
     async reservasTotales(periodo) {
+        const filtroFecha = periodo.createdAt
+            ? { "reserva.fechaReserva": periodo.createdAt }
+            : {};
+
         return await Prestamo.countDocuments({
             estado: "reserva",
-            ...periodo
+            ...filtroFecha
         });
     }
 
-    // 📘 Reservas activas (vigentes sin expirar)
+    // 📘 Reservas activas
     async reservasActivas(periodo) {
         const hoy = new Date();
+
+        const filtroFecha = periodo.createdAt
+            ? { "reserva.fechaReserva": periodo.createdAt }
+            : {};
 
         return await Prestamo.countDocuments({
             estado: "reserva",
             "reserva.fechaExpiracion": { $gte: hoy },
-            ...periodo
+            ...filtroFecha
         });
     }
 
-    // 📗 Total de préstamos creados en el periodo
+    // Total de préstamos 
     async prestamosTotales(periodo) {
-        return await Prestamo.countDocuments(periodo);
+        const filtro = periodo.createdAt
+            ? { fechaPrestamo: periodo.createdAt }
+            : {};
+        return await Prestamo.countDocuments(filtro);
     }
 
-    // 📘 Préstamos activos: estado === "activo" o "atrasado"
+    // 📘 Préstamos activos
     async prestamosActivos(periodo) {
+        const filtro = periodo.createdAt
+            ? { fechaPrestamo: periodo.createdAt }
+            : {};
 
         return await Prestamo.countDocuments({
             estado: { $in: ["activo", "atrasado"] },
-            ...periodo
+            ...filtro
         });
     }
 
+   
+
     async totalLibrosPorCategoria() {
         return await Libro.aggregate([
-            {
-                $group: {
-                    _id: "$categoria",
-                    totalLibros: { $sum: 1 },
-                }
-            },
+            { $group: { _id: "$categoria", totalLibros: { $sum: 1 } } },
             {
                 $lookup: {
                     from: "categorias",
@@ -101,7 +114,6 @@ class EstadisticasRepository {
         ]);
     }
 
-
     async totalPrestamosPorCategoria() {
         return await Prestamo.aggregate([
             {
@@ -143,12 +155,7 @@ class EstadisticasRepository {
         const totales = await Libro.countDocuments();
 
         return await Libro.aggregate([
-            {
-                $group: {
-                    _id: "$categoria",
-                    total: { $sum: 1 }
-                }
-            },
+            { $group: { _id: "$categoria", total: { $sum: 1 } } },
             {
                 $lookup: {
                     from: "categorias",
@@ -172,143 +179,68 @@ class EstadisticasRepository {
         ]);
     }
 
+async obtenerLibrosPorOrden(orden = "desc", limite = 5) {
+    const direccion = orden === "asc" ? 1 : -1;
 
-
-    async listaLibrosPorCategoria(categoriaId) {
-        return await Libro.find({ categoria: categoriaId })
-            .select("titulo autor editorial precio ejemplares");
-    }
-
-
-    async obtenerEstadisticasLibro(libroId) {
-        const id = new mongoose.Types.ObjectId(libroId);
-
-        const resultado = await Libro.aggregate([
-            {
-                // 1️⃣ Filtrar solo el libro solicitado
-                $match: { _id: id }
-            },
-
-            {
-                // 2️⃣ Traer categoría (populate)
-                $lookup: {
-                    from: "categorias",
-                    localField: "categoria",
-                    foreignField: "_id",
-                    as: "categoria"
-                }
-            },
-            { $unwind: "$categoria" },
-
-            {
-                // 3️⃣ Contar préstamos relacionados a este libro
-                $lookup: {
-                    from: "prestamos",
-                    localField: "_id",
-                    foreignField: "libroId",
-                    as: "prestamos"
-                }
-            },
-
-            {
-                // 4️⃣ Formatear respuesta
-                $project: {
-                    _id: 0,                           
-                    libroId: "$_id",
-
-                    // Datos del libro
-                    titulo: 1,
-                    autor: 1,
-                    isbn: 1,
-                    editorial: 1,
-                    imagenURL: 1,
-                    fechaRegistro: 1,
-                    precio: 1,
-                    disponibilidad: 1,
-                    createdAt: 1,
-                    updatedAt: 1,
-
-                    // Contadores
-                    totalEjemplares: { $size: "$ejemplares" },
-                    totalPrestamos: { $size: "$prestamos" },
-
-                    // Categoría populada
-                    categoria: {
-                        _id: "$categoria._id",
-                        categoria: "$categoria.descripcion"
-                    }
-                }
+    return await Prestamo.aggregate([
+        {
+            $group: {
+                _id: "$libroId",
+                totalPrestamos: { $sum: 1 }
             }
-        ]);
-
-        return resultado[0] || null;
-    }
-
-
-    async obtenerLibrosMasPrestados({ orden = "desc", limite = 5 }) {
-        const sortOrder = orden === "asc" ? 1 : -1;
-
-        const resultado = await Prestamo.aggregate([
-            {
-                // Agrupar préstamos por libro
-                $group: {
-                    _id: "$libroId",
-                    totalPrestamos: { $sum: 1 }
-                }
-            },
-            {
-                $sort: { totalPrestamos: sortOrder }
-            },
-            {
-                $limit: limite
-            },
-            {
-                // Traer datos del libro
-                $lookup: {
-                    from: "libros",
-                    localField: "_id",
-                    foreignField: "_id",
-                    as: "libro"
-                }
-            },
-            { $unwind: "$libro" },
-
-            {
-                // Populate de categoría
-                $lookup: {
-                    from: "categorias", 
-                    localField: "libro.categoria",
-                    foreignField: "_id",
-                    as: "categoria"
-                }
-            },
-            { $unwind: "$categoria" },
-
-            {
-                // Output final
-                $project: {
-                    _id: 0,
-                    libroId: "$_id",
-                    totalPrestamos: 1,
-                    libro: {
-                        titulo: "$libro.titulo",
-                        autor: "$libro.autor",
-                        isbn: "$libro.isbn",
-                        imagenURL: "$libro.imagenURL",
-                        totalEjemplares: { $size: "$libro.ejemplares" },
-                    },
-                    categoria: {
-                        _id: "$categoria._id",
-                        nombre: "$categoria.nombre",
-                        descripcion: "$categoria.descripcion"
-                    }
-                }
+        },
+        { $sort: { totalPrestamos: direccion } },
+        { $limit: limite },
+        {
+            $lookup: {
+                from: "libros",
+                localField: "_id",
+                foreignField: "_id",
+                as: "libro"
             }
-        ]);
+        },
+        { $unwind: "$libro" },
+        {
+            $project: {
+                _id: 0,
+                libroId: "$libro._id",
+                titulo: "$libro.titulo",
+                autor: "$libro.autor",
+                totalPrestamos: 1
+            }
+        }
+    ]);
+}
+async resumenBiblioteca() {
+  const devolucionesAtrasadas = await Prestamo.find({
+    estado: "atrasado"
+  }).select("_id");
 
-        return resultado;
-    }
+  const librosReservados = await Prestamo.find({
+    estado: "reserva"
+  }).select("_id");
+
+  const libros = await Libro.find();
+
+  let costoTotal = 0;
+  let totalEjemplares = 0;
+
+  libros.forEach(libro => {
+    libro.ejemplares.forEach(e => {
+      totalEjemplares++;
+      if (e.precio) costoTotal += e.precio;
+    });
+  });
+
+  return {
+    devolucionesAtrasadas,
+    librosReservados,
+    costoTotalLibros: costoTotal,
+    totalEjemplares
+  };
 }
 
+
+}
 
 module.exports = new EstadisticasRepository();
