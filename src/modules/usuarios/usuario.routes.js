@@ -12,25 +12,25 @@ const {verificarRol} = require("../../core/middlewares/roles.middleware");
 router.use(verifyToken);
 
 // Crear usuario
-router.post("/crear-usuario", verificarRol("admin"), validarCreacionUsuario, controller.crearUsuario);
+router.post("/crear-usuario", verificarRol("Administrativo"), validarCreacionUsuario, controller.crearUsuario);
 
 
 // Obtener perfil del usuario autenticado
-router.get("/perfil", verificarRol("admin", "consultor", "docente", "estudiante"), controller.obtenerPerfilAutenticado);
+router.get("/perfil", verificarRol("Administrativo", "Colaborador", "Bibliotecario", "Estudiante"), controller.obtenerPerfilAutenticado);
 
 // Actualizar perfil del usuario autenticado
-router.put("/perfil", verificarRol("admin", "consultor", "docente", "estudiante"), validarEdicionUsuario, controller.editarPerfilAutenticado);
+router.put("/perfil", verificarRol("Administrativo", "Colaborador", "Bibliotecario", "Estudiante"), validarEdicionUsuario, controller.editarPerfilAutenticado);
 
 // Buscar usuarios por nombre o email
-router.get("/", verificarRol("admin"), controller.buscarUsuarios);
+router.get("/", verificarRol("Administrativo"), controller.buscarUsuarios);
 
 // Ver detalles de un usuario por ID
-router.get("/:id", verificarRol("admin"), controller.obtenerUsuarioById);
+router.get("/:id", verificarRol("Administrativo"), controller.obtenerUsuarioById);
 
 // Actualizar usuario por ID
-router.put("/:id", verificarRol("admin"), validarEdicionUsuario, controller.editarUsuario);
+router.put("/:id", verificarRol("Administrativo"), validarEdicionUsuario, controller.editarUsuario);
 
 // Deshabilitar usuario por ID
-router.delete("/:id", verificarRol("admin"), controller.deshabilitarUsuario);
+router.delete("/:id", verificarRol("Administrativo"), controller.deshabilitarUsuario);
 
 module.exports = router;

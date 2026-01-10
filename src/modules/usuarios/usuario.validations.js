@@ -38,9 +38,9 @@ function validarPassword(password, errores) {
 }
 
 function validarRol(rol, rolActual, errores) {
-    const rolesValidos = ["estudiante", "docente", "consultor", "admin"];
+    const rolesValidos = ["Estudiante", "Bibliotecario", "Colaborador", "Administrativo"];
 
-    if(rolActual !== 'admin'){
+    if(rolActual !== 'Administrativo'){
         errores.push(`Solo un administrador puede modificar el rol del usuario`);
     }
     else if (!rol || !rolesValidos.includes(rol)) {
@@ -106,7 +106,7 @@ module.exports.validarEdicionUsuario = async (req, res, next) => {
     if (password) validarPassword(password, errores);
     if (rol) validarRol(rol, req.user.rol, errores);  
     if (telefono) validarTelefono(telefono, errores);
-    if(activo && req.user.rol != "admin") 
+    if(activo && req.user.rol != "Administrativo") 
         errores.push(`Solo un administrador puede modificar el estado del usuario`)
 
     if (errores.length > 0) {
