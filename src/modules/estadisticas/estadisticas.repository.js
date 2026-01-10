@@ -8,57 +8,56 @@ class EstadisticasRepository {
 
     // 📘 Total de libros (usa fechaRegistro)
     async librosTotales(periodo) {
-        const filtro = periodo.createdAt
-            ? { fechaRegistro: periodo.createdAt }
-            : {};
+        const filtro = periodo ? { fechaRegistro: periodo } : {};
         return await Libro.countDocuments(filtro);
     }
 
     // 📗 Total de reservas
     async reservasTotales(periodo) {
-        const filtroFecha = periodo.createdAt
-            ? { "reserva.fechaReserva": periodo.createdAt }
-            : {};
+        const filtro = periodo 
+            ? { 
+                estado: "reserva",
+                "reserva.fechaReserva": periodo 
+              }
+            : { estado: "reserva" };
 
-        return await Prestamo.countDocuments({
-            estado: "reserva",
-            ...filtroFecha
-        });
+        return await Prestamo.countDocuments(filtro);
     }
 
     // 📘 Reservas activas
     async reservasActivas(periodo) {
         const hoy = new Date();
 
-        const filtroFecha = periodo.createdAt
-            ? { "reserva.fechaReserva": periodo.createdAt }
-            : {};
+        const filtro = periodo 
+            ? { 
+                estado: "reserva",
+                "reserva.fechaExpiracion": { $gte: hoy },
+                "reserva.fechaReserva": periodo 
+              }
+            : { 
+                estado: "reserva",
+                "reserva.fechaExpiracion": { $gte: hoy }
+              };
 
-        return await Prestamo.countDocuments({
-            estado: "reserva",
-            "reserva.fechaExpiracion": { $gte: hoy },
-            ...filtroFecha
-        });
+        return await Prestamo.countDocuments(filtro);
     }
 
     // Total de préstamos 
     async prestamosTotales(periodo) {
-        const filtro = periodo.createdAt
-            ? { fechaPrestamo: periodo.createdAt }
-            : {};
+        const filtro = periodo ? { fechaPrestamo: periodo } : {};
         return await Prestamo.countDocuments(filtro);
     }
 
     // 📘 Préstamos activos
     async prestamosActivos(periodo) {
-        const filtro = periodo.createdAt
-            ? { fechaPrestamo: periodo.createdAt }
-            : {};
+        const filtro = periodo 
+            ? { 
+                estado: { $in: ["activo", "atrasado"] },
+                fechaPrestamo: periodo 
+              }
+            : { estado: { $in: ["activo", "atrasado"] } };
 
-        return await Prestamo.countDocuments({
-            estado: { $in: ["activo", "atrasado"] },
-            ...filtro
-        });
+        return await Prestamo.countDocuments(filtro);
     }
 
    
