@@ -14,7 +14,7 @@ const usuarioSchema = new mongoose.Schema({
   telefono: { type: String, default: null },
   rol: { 
     type: String, 
-    enum: ["Estudiante", "Bibliotecario", "Administrativo", "Colaborador"], 
+    enum: ["Estudiante", "Bibliotecario", "Administrativo", "Colaborador", "Profesor"], 
     default: "Estudiante" 
   },
   activo: { type: Boolean, default: true }

@@ -16,10 +16,10 @@ router.post("/crear-usuario", verificarRol("Administrativo"), validarCreacionUsu
 
 
 // Obtener perfil del usuario autenticado
-router.get("/perfil", verificarRol("Administrativo", "Colaborador", "Bibliotecario", "Estudiante"), controller.obtenerPerfilAutenticado);
+router.get("/perfil", verificarRol("Administrativo", "Colaborador", "Bibliotecario", "Estudiante", "Profesor"), controller.obtenerPerfilAutenticado);
 
 // Actualizar perfil del usuario autenticado
-router.put("/perfil", verificarRol("Administrativo", "Colaborador", "Bibliotecario", "Estudiante"), validarEdicionUsuario, controller.editarPerfilAutenticado);
+router.put("/perfil", verificarRol("Administrativo", "Colaborador", "Bibliotecario", "Estudiante", "Profesor"), validarEdicionUsuario, controller.editarPerfilAutenticado);
 
 // Buscar usuarios por nombre o email
 router.get("/", verificarRol("Administrativo"), controller.buscarUsuarios);

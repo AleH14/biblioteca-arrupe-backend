@@ -38,7 +38,7 @@ function validarPassword(password, errores) {
 }
 
 function validarRol(rol, rolActual, errores) {
-    const rolesValidos = ["Estudiante", "Bibliotecario", "Colaborador", "Administrativo"];
+    const rolesValidos = ["Estudiante", "Bibliotecario", "Colaborador", "Administrativo", "Profesor"];
 
     if(rolActual !== 'Administrativo'){
         errores.push(`Solo un administrador puede modificar el rol del usuario`);
