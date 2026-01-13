@@ -33,4 +33,7 @@ router.put("/:id", verificarRol("admin"), validarEdicionUsuario, controller.edit
 // Deshabilitar usuario por ID
 router.delete("/:id", verificarRol("admin"), controller.deshabilitarUsuario);
 
+// Habilitar usuario por ID
+router.put("/:id/habilitar", verificarRol("admin"), controller.habilitarUsuario);
+
 module.exports = router;

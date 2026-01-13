@@ -10,6 +10,7 @@ const UsuarioRepository = {
   create: (data) => Usuario.create(data),
   update: (id, data) => Usuario.findByIdAndUpdate(id, data, { new: true }),
   disable: (id) => Usuario.findByIdAndUpdate(id, { activo: false }, { new: true }),
+  enable: (id) => Usuario.findByIdAndUpdate(id, { activo: true }, { new: true }),
 };
 
 module.exports = UsuarioRepository;

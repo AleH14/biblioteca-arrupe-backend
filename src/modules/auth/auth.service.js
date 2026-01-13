@@ -25,6 +25,13 @@ const AuthService = {
       throw error;
     }
 
+    //VALIDAR USUARIO ACTIVO
+    if (!usuario.activo) {
+    const error = new Error("Usuario desactivado");
+    error.status = 403;
+    throw error;
+    }
+
     const match = await comparePassword(password, usuario.password);
     if (!match) {
       const error = new Error("Credenciales inválidas");
@@ -72,6 +79,12 @@ const AuthService = {
     const usuario = await UsuarioRepository.findById(savedToken.usuarioId);
     if (!usuario) {
       const error = new Error("Refresh token no válido");
+      error.status = 401;
+      throw error;
+    }
+    //VALIDAR USUARIO ACTIVO PARA REFRESH TOKEN
+    if (!usuario.activo) {
+      const error = new Error("Usuario desactivado");
       error.status = 401;
       throw error;
     }

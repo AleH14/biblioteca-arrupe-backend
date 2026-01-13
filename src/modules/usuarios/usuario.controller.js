@@ -51,6 +51,16 @@ exports.deshabilitarUsuario = async (req, res, next) => {
   }
 };
 
+// Habilitar usuario por ID
+exports.habilitarUsuario = async (req, res, next) => {
+  try {
+    const usuarioHabilitado = await UsuarioService.habilitarUsuario(req.params.id);
+    res.json({ success: true, data: usuarioHabilitado });
+  } catch (err) {
+    next(err);
+  }
+};
+
 // Obtener perfil del usuario autenticado
 exports.obtenerPerfilAutenticado = async (req, res, next) => {
   try {

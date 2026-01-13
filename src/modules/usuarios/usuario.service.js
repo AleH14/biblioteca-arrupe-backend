@@ -12,14 +12,13 @@ class UsuarioService {
         return usuarioObj;
     }
 
-
+    
     // Crear un nuevo usuario
     async crearUsuario(data) {
-        // Hash de la contraseña antes de guardar
         if(data.password){
             data.password = await hash.hashPassword(data.password);
-        }
-        else
+        } 
+        else 
         {
             throw new Error("La contraseña es obligatoria");
         }
@@ -40,7 +39,7 @@ class UsuarioService {
             usuarios = await UsuarioRepository.findAll();
         }
 
-        usuarios = Promise.all(usuarios.map(u => this._sanitizeUsuario(u)));
+        usuarios = await Promise.all(usuarios.map(u => this._sanitizeUsuario(u)));
         return usuarios;
     }
 
@@ -57,10 +56,23 @@ class UsuarioService {
 
     // Editar usuario por ID
     async editarUsuario(id, data) {
-        if(data.password){
-            data.password = await hash.hashPassword(data.password);
-        }
-        const usuario = await UsuarioRepository.update(id, data);
+    if(data.password){
+        data.password = await hash.hashPassword(data.password);
+    }
+    const usuario = await UsuarioRepository.update(id, data);
+    if (!usuario) {
+        const error = new Error("Usuario no encontrado");
+        error.status = 404;
+        throw error;
+    }
+    return this._sanitizeUsuario(usuario);
+}
+
+
+    
+    // Deshabilitar usuario por ID
+    async deshabilitarUsuario(id) {
+        const usuario = await UsuarioRepository.disable(id);
         if (!usuario) {
             const error = new Error("Usuario no encontrado");
             error.status = 404;
@@ -69,11 +81,9 @@ class UsuarioService {
         return this._sanitizeUsuario(usuario);
     }
 
-
-
-    // Deshabilitar usuario por ID
-    async deshabilitarUsuario(id) {
-        const usuario = await UsuarioRepository.disable(id);
+    //Habilitar usuario por ID
+    async habilitarUsuario(id) {
+        const usuario = await UsuarioRepository.enable(id);
         if (!usuario) {
             const error = new Error("Usuario no encontrado");
             error.status = 404;
