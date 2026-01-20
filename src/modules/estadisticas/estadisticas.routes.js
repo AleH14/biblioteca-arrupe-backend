@@ -29,6 +29,13 @@ router.get("/libros/top", verificarRol("admin", "consultor"), controller.getLibr
 // Obtener estadísticas de un libro específico
 router.get("/libro", verificarRol("admin", "consultor"), controller.getEstadisticasLibro);
 
+router.get(
+  "/resumen",
+  verificarRol("admin", "consultor"),
+  controller.getResumenBiblioteca
+);
+
+
 module.exports = router;    
 
 

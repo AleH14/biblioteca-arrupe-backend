@@ -6,72 +6,63 @@ const mongoose = require("mongoose");
 
 class EstadisticasRepository {
 
-    // 📘 Total de libros creados en el periodo
-    async librosTotales(periodo) {
-        return await Libro.countDocuments(periodo);
-    }
+    // 📘 Total de libros sin rango de fechas
+    async librosTotales() {
+  return await Libro.countDocuments({
+  });
+}
 
-    // 📗 Total de reservas realizadas por periodo
-    // estado === "reserva"
-    async reservasTotales(periodo) {
-        return await Prestamo.countDocuments({
-            estado: "reserva",
-            ...periodo
-        });
-    }
+    // 📗 Total de reservas
+    async reservasTotales(rangoFecha = {}) {
+  return await Prestamo.countDocuments({
+    estado: "reserva",
+    "reserva.fechaReserva": rangoFecha
+  });
+}
 
-    // 📘 Reservas activas (vigentes sin expirar)
-    async reservasActivas(periodo) {
-        const hoy = new Date();
 
-        return await Prestamo.countDocuments({
-            estado: "reserva",
-            "reserva.fechaExpiracion": { $gte: hoy },
-            ...periodo
-        });
-    }
+    // 📘 Reservas activas
+    async reservasActivas(rangoFecha = {}) {
+  const hoy = new Date();
 
-    // 📗 Total de préstamos creados en el periodo
-    async prestamosTotales(periodo) {
-        return await Prestamo.countDocuments(periodo);
-    }
+  return await Prestamo.countDocuments({
+    estado: "reserva",
+    "reserva.fechaReserva": rangoFecha,
+    "reserva.fechaExpiracion": { $gte: hoy }
+  });
+}
 
-    // 📘 Préstamos activos: estado === "activo" o "atrasado"
-    async prestamosActivos(periodo) {
 
-        return await Prestamo.countDocuments({
-            estado: { $in: ["activo", "atrasado"] },
-            ...periodo
-        });
-    }
+    // Total de préstamos 
+   async prestamosTotales(rangoFecha = {}) {
+  return await Prestamo.countDocuments({
+    fechaPrestamo: rangoFecha
+  });
+}
 
-    async totalLibrosPorCategoria() {
-        return await Libro.aggregate([
-            {
-                $group: {
-                    _id: "$categoria",
-                    totalLibros: { $sum: 1 },
-                }
-            },
-            {
-                $lookup: {
-                    from: "categorias",
-                    localField: "_id",
-                    foreignField: "_id",
-                    as: "categoria"
-                }
-            },
-            { $unwind: "$categoria" },
-            {
-                $project: {
-                    _id: 0,
-                    categoriaId: "$categoria._id",
-                    categoria: "$categoria.descripcion",
-                    totalLibros: 1
-                }
-            }
-        ]);
-    }
+
+    // 📘 Préstamos activos
+    async prestamosActivos(rangoFecha = {}) {
+  return await Prestamo.countDocuments({
+    estado: { $in: ["activo", "atrasado"] },
+    fechaPrestamo: rangoFecha
+  });
+}
+
+
+   
+
+async totalLibrosPorCategoria() {
+  const libros = await Libro.find()
+    .populate("categoria", "descripcion")
+    .lean();
+
+  return libros.map(libro => ({
+    ...libro,
+    categoriaId: libro.categoria?._id?.toString()
+  }));
+}
+
 
     async totalEjemplaresPorCategoria() {
         return await Libro.aggregate([
@@ -100,7 +91,6 @@ class EstadisticasRepository {
             }
         ]);
     }
-
 
     async totalPrestamosPorCategoria() {
         return await Prestamo.aggregate([
@@ -143,12 +133,7 @@ class EstadisticasRepository {
         const totales = await Libro.countDocuments();
 
         return await Libro.aggregate([
-            {
-                $group: {
-                    _id: "$categoria",
-                    total: { $sum: 1 }
-                }
-            },
+            { $group: { _id: "$categoria", total: { $sum: 1 } } },
             {
                 $lookup: {
                     from: "categorias",
@@ -172,143 +157,120 @@ class EstadisticasRepository {
         ]);
     }
 
+async obtenerLibrosPorOrden(orden = "desc", limite = 5) {
+    const direccion = orden === "asc" ? 1 : -1;
 
-
-    async listaLibrosPorCategoria(categoriaId) {
-        return await Libro.find({ categoria: categoriaId })
-            .select("titulo autor editorial precio ejemplares");
-    }
-
-
-    async obtenerEstadisticasLibro(libroId) {
-        const id = new mongoose.Types.ObjectId(libroId);
-
-        const resultado = await Libro.aggregate([
-            {
-                // 1️⃣ Filtrar solo el libro solicitado
-                $match: { _id: id }
-            },
-
-            {
-                // 2️⃣ Traer categoría (populate)
-                $lookup: {
-                    from: "categorias",
-                    localField: "categoria",
-                    foreignField: "_id",
-                    as: "categoria"
-                }
-            },
-            { $unwind: "$categoria" },
-
-            {
-                // 3️⃣ Contar préstamos relacionados a este libro
-                $lookup: {
-                    from: "prestamos",
-                    localField: "_id",
-                    foreignField: "libroId",
-                    as: "prestamos"
-                }
-            },
-
-            {
-                // 4️⃣ Formatear respuesta
-                $project: {
-                    _id: 0,                           
-                    libroId: "$_id",
-
-                    // Datos del libro
-                    titulo: 1,
-                    autor: 1,
-                    isbn: 1,
-                    editorial: 1,
-                    imagenURL: 1,
-                    fechaRegistro: 1,
-                    precio: 1,
-                    disponibilidad: 1,
-                    createdAt: 1,
-                    updatedAt: 1,
-
-                    // Contadores
-                    totalEjemplares: { $size: "$ejemplares" },
-                    totalPrestamos: { $size: "$prestamos" },
-
-                    // Categoría populada
-                    categoria: {
-                        _id: "$categoria._id",
-                        categoria: "$categoria.descripcion"
-                    }
-                }
+    return await Prestamo.aggregate([
+        {
+            $group: {
+                _id: "$libroId",
+                totalPrestamos: { $sum: 1 }
             }
-        ]);
-
-        return resultado[0] || null;
-    }
-
-
-    async obtenerLibrosMasPrestados({ orden = "desc", limite = 5 }) {
-        const sortOrder = orden === "asc" ? 1 : -1;
-
-        const resultado = await Prestamo.aggregate([
-            {
-                // Agrupar préstamos por libro
-                $group: {
-                    _id: "$libroId",
-                    totalPrestamos: { $sum: 1 }
-                }
-            },
-            {
-                $sort: { totalPrestamos: sortOrder }
-            },
-            {
-                $limit: limite
-            },
-            {
-                // Traer datos del libro
-                $lookup: {
-                    from: "libros",
-                    localField: "_id",
-                    foreignField: "_id",
-                    as: "libro"
-                }
-            },
-            { $unwind: "$libro" },
-
-            {
-                // Populate de categoría
-                $lookup: {
-                    from: "categorias", 
-                    localField: "libro.categoria",
-                    foreignField: "_id",
-                    as: "categoria"
-                }
-            },
-            { $unwind: "$categoria" },
-
-            {
-                // Output final
-                $project: {
-                    _id: 0,
-                    libroId: "$_id",
-                    totalPrestamos: 1,
-                    libro: {
-                        titulo: "$libro.titulo",
-                        autor: "$libro.autor",
-                        isbn: "$libro.isbn",
-                        imagenURL: "$libro.imagenURL",
-                        totalEjemplares: { $size: "$libro.ejemplares" },
-                    },
-                    categoria: {
-                        _id: "$categoria._id",
-                        nombre: "$categoria.nombre",
-                        descripcion: "$categoria.descripcion"
-                    }
-                }
+        },
+        { $sort: { totalPrestamos: direccion } },
+        { $limit: limite },
+        {
+            $lookup: {
+                from: "libros",
+                localField: "_id",
+                foreignField: "_id",
+                as: "libro"
             }
-        ]);
+        },
+        { $unwind: "$libro" },
+        {
+            $project: {
+                _id: 0,
+                libroId: "$libro._id",
+                titulo: "$libro.titulo",
+                autor: "$libro.autor",
+                totalPrestamos: 1
+            }
+        }
+    ]);
+}
+async resumenBiblioteca() {
+  const hoy = new Date();
 
-        return resultado;
-    }
+  // =========================
+  // DEVOLUCIONES ATRASADAS (CORREGIDO)
+  // =========================
+  const prestamosActivos = await Prestamo.find({
+    estado: { $in: ["activo", "atrasado"] }
+  })
+    .populate("usuarioId", "nombre grado")  // CAMBIADO: usuarioId en lugar de estudianteId
+    .populate("libroId", "titulo")
+    .lean();
+
+  const devolucionesAtrasadas = prestamosActivos
+    .filter(p => {
+      if (!p.fechaDevolucionEstimada) return false;  // CAMBIADO: fechaDevolucionEstimada
+      const fechaEsperada = new Date(p.fechaDevolucionEstimada);
+      return fechaEsperada < hoy;
+    })
+    .map(p => {
+      const fechaEsperada = new Date(p.fechaDevolucionEstimada);  // CAMBIADO
+      const diasAtraso = Math.floor((hoy - fechaEsperada) / (1000 * 60 * 60 * 24));
+      
+      return {
+        _id: p._id,
+        estudiante: p.usuarioId?.nombre ?? "Desconocido",  // CAMBIADO: usuarioId
+        grado: p.usuarioId?.grado ?? "-",  // CAMBIADO: usuarioId
+        libro: p.libroId?.titulo ?? "Sin título",
+        diasAtraso: Math.max(0, diasAtraso)
+      };
+    });
+
+  // =========================
+  // LIBROS RESERVADOS (CORREGIDO)
+  // =========================
+  const reservas = await Prestamo.find({
+    estado: "reserva"
+  })
+    .populate({
+      path: "usuarioId",  // CAMBIADO: usuarioId
+      select: "nombre grado"
+    })
+    .populate("libroId", "titulo")
+    .lean();
+
+  const librosReservados = reservas.map(r => ({
+    _id: r._id,
+    estudiante: r.usuarioId?.nombre ?? "No registrado",  // CAMBIADO: usuarioId
+    grado: r.usuarioId?.grado ?? "-",  // CAMBIADO: usuarioId
+    libro: r.libroId?.titulo ?? "Sin título",
+    fechaReserva: r.reserva?.fechaReserva
+      ? new Date(r.reserva.fechaReserva).toISOString().split("T")[0]
+      : "-"
+  }));
+
+  // =========================
+  // COSTO Y EJEMPLARES (MANTENER)
+  // =========================
+  const libros = await Libro.find().lean();
+
+  let costoTotalLibros = 0;
+  let totalEjemplares = 0;
+
+  libros.forEach(libro => {
+    (libro.ejemplares || []).forEach(e => {
+      totalEjemplares++;
+      if (e.precio) costoTotalLibros += e.precio;
+    });
+  });
+
+  // =========================
+  // RESPUESTA FINAL
+  // =========================
+  return {
+    devolucionesAtrasadas,
+    librosReservados,
+    costoTotalLibros,
+    totalEjemplares
+  };
 }
 
+
+}
 
 module.exports = new EstadisticasRepository();
