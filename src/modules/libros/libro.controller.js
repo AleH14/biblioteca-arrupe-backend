@@ -66,6 +66,19 @@ exports.removeEjemplar = async (req, res, next) => {
   }
 };
 
+exports.updateEjemplar = async (req, res, next) => {
+  try {
+    const libro = await LibroService.updateEjemplar(
+      req.params.ejemplarId,
+      req.body
+    );
+    res.json({ success: true, data: libro });
+  } catch (err) {
+    next(err);
+  }
+};
+
+
 // Gestión de categorías 
 
 exports.getAllCategorias = async (req, res, next) => {

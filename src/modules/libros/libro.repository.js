@@ -40,7 +40,6 @@ const LibroRepository = {
         }
         return libro.ejemplares.filter(ejemplar => ejemplar.estado === 'disponible');
     },
-
     findEjemplarbyId: async (ejemplarId) => {
         const libro = await Libro.findOne({ "ejemplares._id": ejemplarId });
         if (!libro) {
@@ -48,6 +47,28 @@ const LibroRepository = {
         }
         return libro.ejemplares.id(ejemplarId);
     },
+      //edicion de ejemplares
+    updateEjemplar: async (ejemplarId, data) => {
+    const libro = await Libro.findOne({ "ejemplares._id": ejemplarId });
+    if (!libro) return null;
+
+    return await Libro.findOneAndUpdate(
+        { "ejemplares._id": ejemplarId },
+        {
+            $set: {
+                "ejemplares.$.cdu": data.cdu,
+                "ejemplares.$.estado": data.estado,
+                "ejemplares.$.ubicacionFisica": data.ubicacionFisica,
+                "ejemplares.$.edificio": data.edificio,
+                "ejemplares.$.origen": data.origen,
+                "ejemplares.$.precio": data.precio,
+                "ejemplares.$.donado_por": data.donado_por,
+            }
+        },
+        { new: true }
+    );
+},
+
 
     // Disponibilidad de libro
 

@@ -105,6 +105,22 @@ const LibroService = {
         return await LibroRepository.removeEjemplar(libroId, ejemplarId);
     },
 
+    updateEjemplar: async (ejemplarId, ejemplarData) => {
+    const libroActualizado = await LibroRepository.updateEjemplar(
+        ejemplarId,
+        ejemplarData
+    );
+
+    if (!libroActualizado) {
+        const error = new Error("Ejemplar no encontrado");
+        error.status = 404;
+        throw error;
+    }
+
+    return libroActualizado;
+},
+
+
     // Operaciones CRUD básicas de categorías
     getAllCategorias: async () => {
         return await CategoriaRepository.findAll();

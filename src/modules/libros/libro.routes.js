@@ -30,6 +30,8 @@ router.delete("/:id", verificarRol("admin"), controller.deleteLibro);
 
 router.post("/:libroId/ejemplares", verificarRol("admin"), controller.addEjemplar);
 router.delete("/:libroId/ejemplares/:ejemplarId", verificarRol("admin"), controller.removeEjemplar);
+router.put("/ejemplares/:ejemplarId",verificarRol("admin"), controller.updateEjemplar);
+
 
 
 module.exports = router;    
