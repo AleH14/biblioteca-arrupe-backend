@@ -294,8 +294,14 @@ exports.reservarLibro = async (req, res, next) => {
 
 // Activar una reserva y convertirla en préstamo
 exports.activarReserva = async (req, res, next) => {
-  try {
-    const prestamo = await PrestamoService.activarReserva(req.params.id);
+   try {
+    const { id } = req.params;
+    const { fechaDevolucionEstimada } = req.body; //la fecha del body
+    
+    const prestamo = await PrestamoService.activarReserva(
+      id, 
+      fechaDevolucionEstimada
+    );
     
     res.json({
       success: true,

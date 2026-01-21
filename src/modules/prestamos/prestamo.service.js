@@ -510,6 +510,7 @@ async obtenerPorClasificacion(clasificacion) {
     return {
       id: prestamoRenovado._id,
       nuevaFechaDevolucionEstimada: prestamoRenovado.fechaDevolucionEstimada,
+      estado: prestamoRenovado.estado,
       mensaje: "Préstamo renovado exitosamente"
     };
   }
@@ -647,8 +648,7 @@ async obtenerTodasLasReservas() {
     };
   }
 
-  // Crear una nueva reserva para un libro
-  async reservarLibro(datosReserva, usuarioId) {
+ async reservarLibro(datosReserva, usuarioId) {
     //Crear prestamo de reserva
     const { libroId, fechaExpiracion, tipoPrestamo} = datosReserva;
 
@@ -666,79 +666,100 @@ async obtenerTodasLasReservas() {
       throw new Error("La fecha de expiración es requerida para la reserva");
     }
 
-    const nuevoPrestamoDetalles = await this.crearPrestamoConBusqueda({
+    // 🔵 CAMBIO: En lugar de crear préstamo normal, crear uno especial para reserva
+    const libro = await LibroRepository.findById(libroId);
+    if (!libro) {
+      throw new Error("Libro no encontrado");
+    }
+
+    // Verificar que hay ejemplares disponibles
+    const ejemplaresDisponibles = await LibroRepository.findAvailableEjemplares(libroId);
+    if (ejemplaresDisponibles.length === 0) {
+      throw new Error("No hay ejemplares disponibles para reservar");
+    }
+
+    const ejemplar = ejemplaresDisponibles[0];
+    const ejemplarId = ejemplar._id;
+
+    // Crear préstamo como reserva
+    const nuevoPrestamo = await PrestamoRepository.crear({
       libroId,
+      ejemplarId,
       usuarioId,
-      fechaPrestamo: null,
-      fechaDevolucionEstimada: null,
-      tipoPrestamo
+      estado: 'reserva',
+      tipoPrestamo: tipoPrestamo,
+      reserva: {
+        fechaReserva: new Date(),
+        fechaExpiracion: fechaExpiracionDate
+      },
+      fechaPrestamo: null, // No tiene fecha de préstamo aún
+      fechaDevolucionEstimada: null // No tiene fecha de devolución aún
     });
 
-    const prestamoId = nuevoPrestamoDetalles.id;
-
-    if (!prestamoId) {
-      throw new Error("No se pudo obtener el id del préstamo creado");
-    }
-
-    const prestamo = await PrestamoRepository.obtenerPorId(prestamoId);
-    
-    if (!prestamo) {
-      throw new Error("Préstamo no encontrado");
-    }
-
-
-    // Cambiar estado a reserva
-    await PrestamoRepository.cambiarEstadoPrestamo(prestamoId, 'reserva');
-    
-    //Fecha actual
-    const fechaReserva = new Date();
-
-    const reservaCreada = await PrestamoRepository.crearReserva(
-      prestamoId, 
-      {
-        fechaReserva, 
-        fechaExpiracion: fechaExpiracionDate
-      }
-    );
+    // 🔵 CAMBIO: Actualizar estado del ejemplar a "reservado"
+    await LibroRepository.setEjemplarDisponibilidad(ejemplarId, 'reservado');
 
     return {
-      id: reservaCreada._id,
-      fechaReserva: reservaCreada.fechaReserva,
-      fechaExpiracion: reservaCreada.fechaExpiracion
+      id: nuevoPrestamo._id,
+      mensaje: "Reserva creada exitosamente",
+      fechaReserva: nuevoPrestamo.reserva.fechaReserva,
+      fechaExpiracion: nuevoPrestamo.reserva.fechaExpiracion,
+      ejemplar: {
+        id: ejemplarId,
+        cdu: ejemplar.cdu
+      }
     };
-  }
+}
 
   // Activar una reserva y convertirla en préstamo
-  async activarReserva(prestamoId) {
-    const prestamo = await PrestamoRepository.obtenerPorId(prestamoId);
-    
-    if (!prestamo) {
-      throw new Error("Préstamo no encontrado");
-    }
-
-    if (prestamo.estado !== 'reserva') {
-      throw new Error("Solo se pueden activar reservas en estado 'reserva'");
-    }
-
-    //Comprobar que la reserva no ha expirado
-    const fechaActual = new Date();
-    if (prestamo.reserva.fechaExpiracion < fechaActual) {
-      throw new Error("No se puede activar una reserva que ha expirado");
-    }
-
-    const prestamoActivado = await PrestamoRepository.transformarReservaAPrestamo(prestamoId);
-
-    // Actualizar el estado del ejemplar a "prestado"
-    await LibroRepository.setEjemplarDisponibilidad(prestamo.ejemplarId, 'prestado');
-
-    return {
-      id: prestamoActivado._id,
-      estado: prestamoActivado.estado,
-      fechaPrestamo: prestamoActivado.fechaPrestamo,
-      fechaDevolucionEstimada: prestamoActivado.fechaDevolucionEstimada,
-      mensaje: "Reserva activada y convertida en préstamo exitosamente"
-    };
+ async activarReserva(prestamoId, fechaDevolucionEstimada) { 
+  const prestamo = await PrestamoRepository.obtenerPorId(prestamoId);
+  
+  if (!prestamo) {
+    throw new Error("Préstamo no encontrado");
   }
+
+  if (prestamo.estado !== 'reserva') {
+    throw new Error("Solo se pueden activar reservas en estado 'reserva'");
+  }
+
+  // Comprobar que la reserva no ha expirado
+  const fechaActual = new Date();
+  if (prestamo.reserva.fechaExpiracion < fechaActual) {
+    throw new Error("No se puede activar una reserva que ha expirado");
+  }
+
+  //VALIDAR fechaDevolucionEstimada
+  if (!fechaDevolucionEstimada) {
+    throw new Error("La fecha de devolución estimada es requerida");
+  }
+
+  const fechaDevolucionDate = new Date(fechaDevolucionEstimada);
+  if (isNaN(fechaDevolucionDate.getTime())) {
+    throw new Error("La fecha de devolución estimada no es válida");
+  }
+
+  if (fechaDevolucionDate <= fechaActual) {
+    throw new Error("La fecha de devolución debe ser posterior a la fecha actual");
+  }
+
+  // Transformar reserva en préstamo activo con la fecha proporcionada
+  const prestamoActivado = await PrestamoRepository.transformarReservaAPrestamo(
+    prestamoId, 
+    fechaDevolucionDate //Usar la fecha del modal
+  );
+
+  // Actualizar estado del ejemplar a "prestado"
+  await LibroRepository.setEjemplarDisponibilidad(prestamo.ejemplarId, 'prestado');
+
+  return {
+    id: prestamoActivado._id,
+    estado: prestamoActivado.estado,
+    fechaPrestamo: prestamoActivado.fechaPrestamo,
+    fechaDevolucionEstimada: prestamoActivado.fechaDevolucionEstimada,
+    mensaje: "Reserva activada y convertida en préstamo exitosamente"
+  };
+}
 
   // Cancelar una reserva existente
   async cancelarReserva(prestamoId) {
@@ -752,6 +773,9 @@ async obtenerTodasLasReservas() {
       throw new Error("Solo se pueden cancelar reservas en estado 'reserva'");
     }
 
+    // Primero liberar el ejemplar
+    await LibroRepository.setEjemplarDisponibilidad(prestamo.ejemplarId, 'disponible');
+
     const prestamoCancelado = await PrestamoRepository.cancelarReserva(prestamoId);
 
     return {
@@ -759,7 +783,7 @@ async obtenerTodasLasReservas() {
       estado: prestamoCancelado.estado,
       mensaje: "Reserva cancelada exitosamente"
     };
-  }
+}
 
   // Obtener reservas vigentes de un usuario
   async obtenerReservasVigentesPorUsuario(usuarioId) {
