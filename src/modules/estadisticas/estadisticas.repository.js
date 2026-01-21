@@ -157,38 +157,56 @@ async totalLibrosPorCategoria() {
         ]);
     }
 
-async obtenerLibrosPorOrden(orden = "desc", limite = 5) {
+async obtenerLibrosPorOrden(orden = "desc", limite = 10) { 
     const direccion = orden === "asc" ? 1 : -1;
 
-    return await Prestamo.aggregate([
+    // Primero obtenemos todos los libros
+    const todosLosLibros = await Libro.find()
+        .select("titulo autor _id")
+        .lean();
+
+    // Luego obtenemos los préstamos agrupados por libro
+    const prestamosPorLibro = await Prestamo.aggregate([
         {
             $group: {
                 _id: "$libroId",
                 totalPrestamos: { $sum: 1 }
             }
-        },
-        { $sort: { totalPrestamos: direccion } },
-        { $limit: limite },
-        {
-            $lookup: {
-                from: "libros",
-                localField: "_id",
-                foreignField: "_id",
-                as: "libro"
-            }
-        },
-        { $unwind: "$libro" },
-        {
-            $project: {
-                _id: 0,
-                libroId: "$libro._id",
-                titulo: "$libro.titulo",
-                autor: "$libro.autor",
-                totalPrestamos: 1
-            }
         }
     ]);
+
+    // Convertimos a un mapa para búsqueda rápida
+    const prestamosMap = new Map();
+    prestamosPorLibro.forEach(item => {
+        prestamosMap.set(item._id.toString(), item.totalPrestamos);
+    });
+
+    // Combinamos libros con sus préstamos (0 si no tiene)
+    const librosConPrestamos = todosLosLibros.map(libro => {
+        const libroId = libro._id.toString();
+        const totalPrestamos = prestamosMap.get(libroId) || 0;
+        
+        return {
+            libroId: libro._id,
+            titulo: libro.titulo,
+            autor: libro.autor,
+            totalPrestamos: totalPrestamos
+        };
+    });
+
+    // Ordenamos según el parámetro
+    librosConPrestamos.sort((a, b) => {
+        if (orden === "asc") {
+            return a.totalPrestamos - b.totalPrestamos;
+        } else {
+            return b.totalPrestamos - a.totalPrestamos;
+        }
+    });
+
+    // Limitamos a los n primeros
+    return librosConPrestamos.slice(0, limite);
 }
+
 async resumenBiblioteca() {
   const hoy = new Date();
 
