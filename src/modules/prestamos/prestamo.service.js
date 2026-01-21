@@ -7,52 +7,68 @@ const LibroRepository = require("../libros/libro.repository");
 class PrestamoService {
 
   // Buscar préstamos por nombre de alumno
-  async buscarPorNombreAlumno(nombre) {
-    if (!nombre || nombre.trim().length === 0) {
-      throw new Error("El nombre del alumno es requerido");
-    }
-
-    const prestamos = await PrestamoRepository.buscarPorNombreUsuario(nombre.trim());
-    
-    // Formatear la respuesta con información específica solicitada
-    return prestamos.map(prestamo => {
-      const esAtrasado = prestamo.estado === 'activo' && 
-                        new Date() > prestamo.fechaDevolucionEstimada;
-      const ejemplar = prestamo.libroId.ejemplares.id(prestamo.ejemplarId);
-      
-      // Si el ejemplar fue eliminado, saltar este préstamo
-      if (!ejemplar) {
-        return null;
-      }
-      
-      return {
-        id: prestamo._id,
-        alumno: {
-          nombre: prestamo.usuarioId.nombre,
-          email: prestamo.usuarioId.email
-        },
-        libro: {
-          titulo: prestamo.libroId.titulo,
-          autor: prestamo.libroId.autor,
-          isbn: prestamo.libroId.isbn
-        },
-        ejemplar: {
-          id: prestamo.ejemplarId,
-          cdu: ejemplar.cdu,
-          ubicacionFisica: ejemplar.ubicacionFisica,
-          edificio: ejemplar.edificio
-        },
-        fechaPrestamo: prestamo.fechaPrestamo,
-        fechaVencimiento: prestamo.fechaDevolucionEstimada,
-        estado: esAtrasado ? 'atrasado' : prestamo.estado,
-        diasRetraso: esAtrasado ? 
-          Math.floor((new Date() - prestamo.fechaDevolucionEstimada) / (1000 * 60 * 60 * 24)) : 0
-      };
-    }).filter(p => p !== null);
+async buscarPorNombreAlumno(nombre) {
+  if (!nombre || nombre.trim().length === 0) {
+    throw new Error("El nombre del alumno es requerido");
   }
 
+  const prestamos = await PrestamoRepository.buscarPorNombreUsuario(nombre.trim());
+  
+  console.log("DEBUG - Primer préstamo:", prestamos[0]);
+  console.log("DEBUG - Usuario del primer préstamo:", prestamos[0]?.usuarioId);
+  
+  // Formatear la respuesta con información específica solicitada
+  return prestamos.map(prestamo => {
+    const esAtrasado = prestamo.estado === 'activo' && 
+                      new Date() > prestamo.fechaDevolucionEstimada;
+    
+    // Verificar que exista libro y ejemplar
+    if (!prestamo.libroId || !prestamo.libroId.ejemplares) {
+      return null;
+    }
+    
+    const ejemplar = prestamo.libroId.ejemplares.id(prestamo.ejemplarId);
+    
+    // Si el ejemplar fue eliminado, saltar este préstamo
+    if (!ejemplar) {
+      return null;
+    }
+    
+    // Verificar que exista usuarioId
+    if (!prestamo.usuarioId) {
+      return null;
+    }
+    
+    return {
+      id: prestamo._id,
+      usuario: {
+        id: prestamo.usuarioId._id,
+        nombre: prestamo.usuarioId.nombre,
+        email: prestamo.usuarioId.email
+      },
+      libro: {
+        id: prestamo.libroId._id,
+        titulo: prestamo.libroId.titulo,
+        autor: prestamo.libroId.autor,
+        isbn: prestamo.libroId.isbn
+      },
+      ejemplar: {
+        id: prestamo.ejemplarId,
+        cdu: ejemplar.cdu,
+        ubicacionFisica: ejemplar.ubicacionFisica,
+        edificio: ejemplar.edificio
+      },
+      fechaPrestamo: prestamo.fechaPrestamo,
+      fechaDevolucionEstimada: prestamo.fechaDevolucionEstimada,
+      fechaDevolucionReal: prestamo.fechaDevolucionReal,
+      estado: esAtrasado ? 'atrasado' : prestamo.estado,
+      diasRetraso: esAtrasado ? 
+        Math.floor((new Date() - prestamo.fechaDevolucionEstimada) / (1000 * 60 * 60 * 24)) : 0
+    };
+  }).filter(p => p !== null);
+}
 
-// Obtener préstamos clasificados por estado
+// Obtener préstamos clasificados por estado - SOLO UN MÉTODO
 async obtenerPorClasificacion(clasificacion) {
   const estadosValidos = ['todos', 'activos', 'atrasados', 'cerrados'];
   
@@ -69,10 +85,16 @@ async obtenerPorClasificacion(clasificacion) {
       let estadoCalculado = prestamo.estado;
       let diasRetraso = 0;
 
+      // Verificar que exista usuario
+      if (!prestamo.usuarioId) {
+        return null;
+      }
+
       let libro = await LibroRepository.findById(prestamo.libroId);
-      if(!libro) {
+      if (!libro) {
         libro = await LibroRepository.findByEjemplarId(prestamo.ejemplarId);
       }
+      
       const ejemplar = await LibroRepository.findEjemplarbyId(prestamo.ejemplarId);
 
       // Si el libro o ejemplar fueron eliminados, saltar este préstamo
@@ -90,12 +112,74 @@ async obtenerPorClasificacion(clasificacion) {
 
       return {
         id: prestamo._id,
-        alumno: {
+        usuario: {  // CAMBIADO: usar 'usuario' en lugar de 'alumno'
+          id: prestamo.usuarioId._id,
           nombre: prestamo.usuarioId.nombre,
           email: prestamo.usuarioId.email,
           telefono: prestamo.usuarioId.telefono
         },
         libro: {
+          id: libro._id,
+          titulo: libro.titulo,
+          autor: libro.autor,
+          isbn: libro.isbn,
+        },
+        ejemplar: {
+          id: prestamo.ejemplarId,
+          cdu: ejemplar.cdu,
+          ubicacionFisica: ejemplar.ubicacionFisica,
+          edificio: ejemplar.edificio
+        },
+        reserva: prestamo.reserva,
+        fechaPrestamo: prestamo.fechaPrestamo,
+        fechaDevolucionEstimada: prestamo.fechaDevolucionEstimada, // CAMBIADO: nombre consistente
+        fechaDevolucionReal: prestamo.fechaDevolucionReal,
+        estado: estadoCalculado,
+        diasRetraso: diasRetraso
+      };
+    })
+  ).then(prestamos => prestamos.filter(p => p !== null));
+}
+
+  // Obtener por usuario autenticado
+  async obtenerPrestamosDelUsuario(usuarioId) {
+  const prestamos = await PrestamoRepository.obtenerPrestamosPorUsuario(usuarioId);
+
+  // Mapeo asíncrono con Promise.all
+  return Promise.all(
+    prestamos.map(async (prestamo) => {
+      const fechaActual = new Date();
+      let estadoCalculado = prestamo.estado;
+      let diasRetraso = 0;
+
+      let libro = await LibroRepository.findById(prestamo.libroId);
+      if(!libro) {
+        libro = await LibroRepository.findByEjemplarId(prestamo.ejemplarId);
+      }
+      const ejemplar = await LibroRepository.findEjemplarbyId(prestamo.ejemplarId);
+      
+      // Si el libro o ejemplar fueron eliminados, saltar este préstamo
+      if (!libro || !ejemplar) {
+        return null;
+      }
+
+      // Determinar si está atrasado
+      if (prestamo.estado === 'activo' && fechaActual > prestamo.fechaDevolucionEstimada) {
+        estadoCalculado = 'atrasado';
+        diasRetraso = Math.floor(
+          (fechaActual - prestamo.fechaDevolucionEstimada) / (1000 * 60 * 60 * 24)
+        );
+      }
+
+      return {
+        id: prestamo._id,
+        usuario: {  
+          id: prestamo.usuarioId._id,
+          nombre: prestamo.usuarioId.nombre,
+          email: prestamo.usuarioId.email
+        },
+        libro: {
+          id: libro._id,
           titulo: libro.titulo,
           autor: libro.autor,
           isbn: libro.isbn,
@@ -108,7 +192,7 @@ async obtenerPorClasificacion(clasificacion) {
           },
         reserva: prestamo.reserva,
         fechaPrestamo: prestamo.fechaPrestamo,
-        fechaVencimiento: prestamo.fechaDevolucionEstimada,
+        fechaDevolucionEstimada: prestamo.fechaDevolucionEstimada, 
         fechaDevolucionReal: prestamo.fechaDevolucionReal,
         estado: estadoCalculado,
         diasRetraso: diasRetraso
@@ -116,60 +200,6 @@ async obtenerPorClasificacion(clasificacion) {
     })
   ).then(prestamos => prestamos.filter(p => p !== null));
 }
-
-  // Obtener por usuario autenticado
-  async obtenerPrestamosDelUsuario(usuarioId) {
-    const prestamos = await PrestamoRepository.obtenerPrestamosPorUsuario(usuarioId);
-
-    // Mapeo asíncrono con Promise.all
-    return Promise.all(
-      prestamos.map(async (prestamo) => {
-        const fechaActual = new Date();
-        let estadoCalculado = prestamo.estado;
-        let diasRetraso = 0;
-
-        let libro = await LibroRepository.findById(prestamo.libroId);
-        if(!libro) {
-          libro = await LibroRepository.findByEjemplarId(prestamo.ejemplarId);
-        }
-        const ejemplar = await LibroRepository.findEjemplarbyId(prestamo.ejemplarId);
-        
-        // Si el libro o ejemplar fueron eliminados, saltar este préstamo
-        if (!libro || !ejemplar) {
-          return null;
-        }
-
-        // Determinar si está atrasado
-        if (prestamo.estado === 'activo' && fechaActual > prestamo.fechaDevolucionEstimada) {
-          estadoCalculado = 'atrasado';
-          diasRetraso = Math.floor(
-            (fechaActual - prestamo.fechaDevolucionEstimada) / (1000 * 60 * 60 * 24)
-          );
-        }
-
-        return {
-          id: prestamo._id,
-          libro: {
-            titulo: libro.titulo,
-            autor: libro.autor,
-            isbn: libro.isbn,
-          },
-          ejemplar: {
-              id: prestamo.ejemplarId,
-              cdu: ejemplar.cdu,
-              ubicacionFisica: ejemplar.ubicacionFisica,
-              edificio: ejemplar.edificio
-            },
-          reserva: prestamo.reserva,
-          fechaPrestamo: prestamo.fechaPrestamo,
-          fechaVencimiento: prestamo.fechaDevolucionEstimada,
-          fechaDevolucionReal: prestamo.fechaDevolucionReal,
-          estado: estadoCalculado,
-          diasRetraso: diasRetraso
-        };
-      })
-    ).then(prestamos => prestamos.filter(p => p !== null));
-  }
 
 
   // Cambiar estado a cerrado/finalizado
@@ -555,7 +585,7 @@ async obtenerPorClasificacion(clasificacion) {
 
     return {
       id: r._id,
-      usuario: {
+       usuario: {  
         id: r.usuarioId._id,
         nombre: r.usuarioId.nombre,
         email: r.usuarioId.email

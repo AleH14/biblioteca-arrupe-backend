@@ -16,10 +16,10 @@ exports.buscarPorNombreAlumno = async (req, res, next) => {
     const prestamos = await PrestamoService.buscarPorNombreAlumno(nombre);
     
     res.json({
-      success: true,
+       success: true,
       data: prestamos,
       total: prestamos.length,
-      mensaje: prestamos.length === 0 ? "No se encontraron préstamos para este alumno" : null
+      mensaje: prestamos.length === 0 ? "No se encontraron préstamos para este usuario" : null
     });
   } catch (err) {
     next(err);
