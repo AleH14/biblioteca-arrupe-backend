@@ -16,10 +16,10 @@ exports.buscarPorNombreAlumno = async (req, res, next) => {
     const prestamos = await PrestamoService.buscarPorNombreAlumno(nombre);
     
     res.json({
-      success: true,
+       success: true,
       data: prestamos,
       total: prestamos.length,
-      mensaje: prestamos.length === 0 ? "No se encontraron préstamos para este alumno" : null
+      mensaje: prestamos.length === 0 ? "No se encontraron préstamos para este usuario" : null
     });
   } catch (err) {
     next(err);
@@ -294,8 +294,14 @@ exports.reservarLibro = async (req, res, next) => {
 
 // Activar una reserva y convertirla en préstamo
 exports.activarReserva = async (req, res, next) => {
-  try {
-    const prestamo = await PrestamoService.activarReserva(req.params.id);
+   try {
+    const { id } = req.params;
+    const { fechaDevolucionEstimada } = req.body; //la fecha del body
+    
+    const prestamo = await PrestamoService.activarReserva(
+      id, 
+      fechaDevolucionEstimada
+    );
     
     res.json({
       success: true,

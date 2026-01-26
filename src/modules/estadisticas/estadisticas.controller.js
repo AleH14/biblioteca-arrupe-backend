@@ -1,69 +1,92 @@
-// src/module/estadisticas/estadisticas.controller.js
+// src/modules/estadisticas/estadisticas.controller.js
+
 const EstadisticasService = require("./estadisticas.service");
 
 exports.getMetricas = async (req, res, next) => {
-    try {
-        const periodo = req.query.periodo;
-        const metricas = await EstadisticasService.obtenerMetricas(periodo);
-        res.json({
-          success: true,
-          data: metricas,
-        });
-      } catch (err) {
-        next(err);
-      }
-}
+  try {
+    const { periodo } = req.query;
+
+    const metricas = await EstadisticasService.obtenerMetricas(periodo);
+
+    res.json({
+      success: true,
+      data: metricas,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
 
 exports.getTendencias = async (req, res, next) => {
-    try {
-        const periodo = req.query.periodo;
-        const tendencias = await EstadisticasService.obtenerTendencias(periodo);
-        res.json({
-          success: true,
-          data: tendencias,
-        });
-      } catch (err) {
-        next(err);
-      }
-}
+  try {
+    const { periodo } = req.query;
+
+    const tendencias = await EstadisticasService.obtenerTendencias(periodo);
+
+    res.json({
+      success: true,
+      data: tendencias,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
 
 exports.getLibrosPorOrden = async (req, res, next) => {
-    try {
-        const orden = req.query.orden;
-        const limite = req.query.limite ? parseInt(req.query.limite, 10) : undefined;
-        const resultado = await EstadisticasService.obtenerLibrosPorOrden(orden, limite);
-        res.json({
-          success: true,
-          data: resultado,
-        });
-      } catch (err) {
-        next(err);
-      }
-}
+  try {
+    const orden = req.query.orden || "desc";   
+    const limite = req.query.limite
+      ? parseInt(req.query.limite, 10)
+      : 10;                                   
+
+    const resultado = await EstadisticasService.obtenerLibrosPorOrden(
+      orden,
+      limite
+    );
+
+    res.json({
+      success: true,
+      data: resultado,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
 
 
 exports.getMetricasCategoria = async (req, res, next) => {
-    try {
-        const resultado = await EstadisticasService.obtenerMetricasCategoria();
-        res.json({
-          success: true,
-          data: resultado,
-        });
-      } catch (err) {
-        next(err);
-      }
-}
+  try {
+    const resultado = await EstadisticasService.obtenerMetricasCategoria();
 
+    res.json({
+      success: true,
+      data: resultado,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
 
 exports.getEstadisticasLibro = async (req, res, next) => {
-    try {
-        const id = req.query.id;
-        const resultado = await EstadisticasService.obtenerEstadisticasLibro(id);
-        res.json({
-          success: true,
-          data: resultado,
-        });
-      } catch (err) {
-        next(err);
-      }
-}
+  try {
+    const id = req.query.id;
+
+    const resultado = await EstadisticasService.obtenerEstadisticasLibro(id);
+
+    res.json({
+      success: true,
+      data: resultado,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+exports.getResumenBiblioteca = async (req, res, next) => {
+  try {
+    const data = await EstadisticasService.obtenerResumenBiblioteca();
+    res.json({ success: true, data });
+  } catch (err) {
+    next(err);
+  }
+};
+

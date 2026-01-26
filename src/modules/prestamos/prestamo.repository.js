@@ -172,7 +172,8 @@ class PrestamoRepository {
     return await Prestamo.findByIdAndUpdate(
       id,
       { 
-        fechaDevolucionEstimada: nuevaFechaDevolucionEstimada
+        fechaDevolucionEstimada: nuevaFechaDevolucionEstimada,
+        estado: 'activo' // Asegurar que el estado siga siendo activo
       },
       { new: true }
     );
@@ -223,7 +224,9 @@ class PrestamoRepository {
       id,
       { 
         estado: 'activo',
-        fechaDevolucionEstimada: nuevaFechaDevolucionEstimada
+        fechaPrestamo: new Date(), // Fecha actual como fecha de préstamo
+        fechaDevolucionEstimada: nuevaFechaDevolucionEstimada,
+        reserva: null // Eliminar el subdocumento de reserva
       },
       { new: true }
     );
