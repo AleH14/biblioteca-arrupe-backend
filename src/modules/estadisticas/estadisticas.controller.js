@@ -4,7 +4,7 @@ const EstadisticasService = require("./estadisticas.service");
 
 exports.getMetricas = async (req, res, next) => {
   try {
-    const periodo = req.query.periodo || "mensual";
+    const { periodo } = req.query;
 
     const metricas = await EstadisticasService.obtenerMetricas(periodo);
 
@@ -19,7 +19,7 @@ exports.getMetricas = async (req, res, next) => {
 
 exports.getTendencias = async (req, res, next) => {
   try {
-    const periodo = req.query.periodo || "mensual";
+    const { periodo } = req.query;
 
     const tendencias = await EstadisticasService.obtenerTendencias(periodo);
 
@@ -37,7 +37,7 @@ exports.getLibrosPorOrden = async (req, res, next) => {
     const orden = req.query.orden || "desc";   
     const limite = req.query.limite
       ? parseInt(req.query.limite, 10)
-      : 5;                                   
+      : 10;                                   
 
     const resultado = await EstadisticasService.obtenerLibrosPorOrden(
       orden,

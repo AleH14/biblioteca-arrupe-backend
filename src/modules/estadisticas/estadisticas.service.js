@@ -244,7 +244,7 @@ class EstadisticasService {
         );
     }
 
-    async obtenerLibrosPorOrden(orden = "desc", limite = 5) {
+    async obtenerLibrosPorOrden(orden = "desc", limite = 10) {
     return await EstadisticasRepository.obtenerLibrosPorOrden(orden, limite);
 }
 
