@@ -14,7 +14,7 @@ class PrestamoRepository {
       })
       .populate({
         path: 'libroId',
-        select: 'titulo autor isbn estado ejemplares'
+        select: 'titulo autor isbn estado ejemplares imagenURL'
       })
       .exec()
       .then(prestamos => prestamos.filter(prestamo => prestamo.usuarioId !== null));
@@ -51,7 +51,7 @@ class PrestamoRepository {
       })
       .populate({
         path: 'libroId',
-        select: 'titulo autor isbn estado ejemplares'
+        select: 'titulo autor isbn estado ejemplares imagenURL'
       })
       .sort({ fechaPrestamo: -1 });
   }
@@ -65,7 +65,7 @@ class PrestamoRepository {
       })
       .populate({
         path: 'libroId',
-        select: 'titulo autor isbn editorial ejemplares'
+        select: 'titulo autor isbn editorial ejemplares imagenURL'
       });
   }
 
@@ -98,7 +98,7 @@ class PrestamoRepository {
       })
       .populate({
         path: 'libroId',
-        select: 'titulo autor isbn estado ejemplares'
+        select: 'titulo autor isbn estado ejemplares imagenURL'
       })
       .sort({ fechaPrestamo: -1 })
       .skip(skip)
@@ -130,7 +130,7 @@ class PrestamoRepository {
     })
     .populate({
       path: 'libroId',
-      select: 'titulo autor isbn'
+      select: 'titulo autor isbn imagenURL'
     })
     .sort({ fechaPrestamo: -1 });
   }
@@ -142,7 +142,7 @@ class PrestamoRepository {
     })
     .populate({
       path: 'libroId',
-      select: 'titulo autor isbn'
+      select: 'titulo autor isbn imagenURL'
     })
     .sort({ fechaPrestamo: -1 });
   }
@@ -163,7 +163,7 @@ class PrestamoRepository {
     })
     .populate({
       path: 'libroId',
-      select: 'titulo autor'
+      select: 'titulo autor imagenURL'
     });
   }
 
@@ -243,7 +243,7 @@ class PrestamoRepository {
   })
   .populate({
     path: 'libroId',
-    select: 'titulo autor isbn ejemplares'
+    select: 'titulo autor isbn ejemplares imagenURL'
   });
 };
 
@@ -261,7 +261,7 @@ async obtenerReservasPorUsuario(usuarioId) {
   })
   .populate({
     path: 'libroId',
-    select: 'titulo autor isbn editorial ejemplares'
+    select: 'titulo autor isbn editorial ejemplares imagenURL'
   });
 };
 
@@ -274,7 +274,7 @@ async obtenerReservasPorUsuario(usuarioId) {
       })
       .populate({
         path: 'libroId',
-        select: 'titulo autor isbn editorial ejemplares'
+        select: 'titulo autor isbn editorial ejemplares imagenURL'
       });
   };  
 
@@ -292,7 +292,7 @@ async obtenerReservasPorUsuario(usuarioId) {
       })
       .populate({
         path: 'libroId',
-        select: 'titulo autor isbn editorial ejemplares'
+        select: 'titulo autor isbn editorial ejemplares imagenURL'
       });
   };
 
@@ -309,7 +309,7 @@ async obtenerReservasPorUsuario(usuarioId) {
       })
       .populate({
         path: 'libroId',
-        select: 'titulo autor isbn editorial ejemplares'
+        select: 'titulo autor isbn editorial ejemplares imagenURL'
       });
   };
 

@@ -183,6 +183,7 @@ async obtenerPorClasificacion(clasificacion) {
           titulo: libro.titulo,
           autor: libro.autor,
           isbn: libro.isbn,
+          imagenURL: libro.imagenURL || null
         },
         ejemplar: {
             id: prestamo.ejemplarId,
@@ -594,7 +595,8 @@ async obtenerPorClasificacion(clasificacion) {
         id: r.libroId._id,
         titulo: r.libroId.titulo,
         autor: r.libroId.autor,
-        isbn: r.libroId.isbn
+        isbn: r.libroId.isbn,
+        imagenURL: r.libroId.imagenURL || null
       },
       ejemplar: {
         id: ejemplar._id,
