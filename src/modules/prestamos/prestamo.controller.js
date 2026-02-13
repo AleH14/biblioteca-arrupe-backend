@@ -280,17 +280,34 @@ exports.obtenerDetallesReserva = async (req, res, next) => {
 // Crear una nueva reserva para un libro
 exports.reservarLibro = async (req, res, next) => {
   try {
-    const reserva = await PrestamoService.reservarLibro(req.body, req.user.sub);
-    
+
+    const { usuarioId } = req.body;
+
+    if (!usuarioId) {
+      return res.status(400).json({
+        success: false,
+        message: "usuarioId es requerido"
+      });
+    }
+
+    const reserva = await PrestamoService.reservarLibro(
+      req.body,
+      usuarioId
+    );
+
     res.status(201).json({
       success: true,
       data: reserva,
       message: "Reserva creada exitosamente"
     });
+
   } catch (err) {
     next(err);
   }
 };
+
+
+
 
 // Activar una reserva y convertirla en préstamo
 exports.activarReserva = async (req, res, next) => {
