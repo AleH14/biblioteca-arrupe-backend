@@ -6,8 +6,13 @@ const Libro = require("./libro.model");
 const LibroRepository = {
 
     // Operaciones CRUD básicas
-    findAll: () => Libro.find().populate('categoria', 'descripcion'),
-    findById: (id) => Libro.findById(id).populate('categoria', 'descripcion'),
+    findAll: () => Libro.find().populate('categoria'),
+    findById: (id) => Libro.findById(id).populate('categoria'),
+    create: (data) => Libro.create(data),
+    update: (id, data) => Libro.findByIdAndUpdate(id, data, { new: true }),
+    remove: (id) => Libro.findByIdAndDelete(id),
+
+    //Búsquedas adicionales
     findByISBN: (isbn) => Libro.findOne({ isbn }).populate('categoria', 'descripcion'),
     findByAuthor: (author) => Libro.find({ autor: new RegExp(author, 'i') }).populate('categoria', 'descripcion'),
     findByTitle: (title) => Libro.find({ titulo: new RegExp(title, 'i') }).populate('categoria', 'descripcion'),
