@@ -146,6 +146,31 @@ class PrestamoRepository {
     })
     .sort({ fechaPrestamo: -1 });
   }
+  async marcarReservasExpiradas() {
+  const ahora = new Date();
+
+  // Buscar reservas expiradas
+  const reservasExpiradas = await Prestamo.find({
+    estado: 'reserva',
+    'reserva.fechaExpiracion': { $lt: ahora }
+  });
+
+  for (const reserva of reservasExpiradas) {
+    // Cambiar estado a expirada
+    reserva.estado = 'expirada';
+    await reserva.save();
+  }
+
+  return reservasExpiradas;
+}
+async marcarReservaComoExpirada(id) {
+  return await Prestamo.findByIdAndUpdate(
+    id,
+    { estado: 'expirada' },
+    { new: true }
+  );
+}
+
 
 
   // Obtener préstamos próximos a vencer (para notificaciones)

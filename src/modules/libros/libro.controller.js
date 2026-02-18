@@ -1,15 +1,25 @@
 // src/modules/libros/libro.controller.js
 const LibroService = require("./libro.service");
+const PrestamoService = require("../prestamos/prestamo.service");
+
+
 
 exports.getLibros = async (req, res, next) => {
   try {
+    console.log("🔥 GET LIBROS EJECUTADO");
+
+    // 🔥 LIBERAR RESERVAS VENCIDAS
+    await PrestamoService.liberarReservasExpiradas();
+
     const filtros = req.query;
     const libros = await LibroService.getLibros(filtros);
-    res.json({success: true, data: libros});
+
+    res.json({ success: true, data: libros });
   } catch (err) {
     next(err);
   }
 };
+
 
 exports.getLibroById = async (req, res, next) => {
   try {

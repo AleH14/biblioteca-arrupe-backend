@@ -183,7 +183,6 @@ async obtenerPorClasificacion(clasificacion) {
           titulo: libro.titulo,
           autor: libro.autor,
           isbn: libro.isbn,
-          imagenURL: libro.imagenURL || null
         },
         ejemplar: {
             id: prestamo.ejemplarId,
@@ -595,8 +594,7 @@ async obtenerPorClasificacion(clasificacion) {
         id: r.libroId._id,
         titulo: r.libroId.titulo,
         autor: r.libroId.autor,
-        isbn: r.libroId.isbn,
-        imagenURL: r.libroId.imagenURL || null
+        isbn: r.libroId.isbn
       },
       ejemplar: {
         id: ejemplar._id,
@@ -681,73 +679,66 @@ async obtenerTodasLasReservas() {
   }
 
  async reservarLibro(datosReserva, usuarioId) {
+    //Crear prestamo de reserva
+    const { libroId, fechaExpiracion, tipoPrestamo} = datosReserva;
 
-  const { libroId, fechaExpiracion, tipoPrestamo } = datosReserva;
+    const fechaExpiracionDate = new Date(fechaExpiracion);
 
-  if (!libroId || !usuarioId) {
-    throw new Error("libroId y usuarioId son requeridos para crear una reserva");
-  }
-
-  if (!fechaExpiracion) {
-    throw new Error("La fecha de expiración es requerida para la reserva");
-  }
-
-  const fechaExpiracionDate = new Date(fechaExpiracion);
-
-  if (isNaN(fechaExpiracionDate.getTime())) {
-    throw new Error("La fecha de expiración no es válida");
-  }
-
-  const libro = await LibroRepository.findById(libroId);
-  if (!libro) {
-    throw new Error("Libro no encontrado");
-  }
-
-  const ejemplaresDisponibles = await LibroRepository.findAvailableEjemplares(libroId);
-  if (ejemplaresDisponibles.length === 0) {
-    throw new Error("No hay ejemplares disponibles para reservar");
-  }
-
-  const ejemplar = ejemplaresDisponibles[0];
-  const ejemplarId = ejemplar._id;
-
-  // 🔥 GENERAR FECHAS OBLIGATORIAS PARA QUE MONGOOSE NO FALLE
-  const fechaActual = new Date();
-
-  // Fecha de devolución temporal (ej: +15 días)
-  const fechaDevolucionTemporal = new Date();
-  fechaDevolucionTemporal.setDate(fechaActual.getDate() + 15);
-
-  const nuevoPrestamo = await PrestamoRepository.crear({
-    libroId,
-    ejemplarId,
-    usuarioId,
-    estado: 'reserva',
-    tipoPrestamo: tipoPrestamo || 'estudiante',
-
-    // 🔥 AHORA NUNCA VAN NULL
-    fechaPrestamo: fechaActual,
-    fechaDevolucionEstimada: fechaDevolucionTemporal,
-
-    reserva: {
-      fechaReserva: fechaActual,
-      fechaExpiracion: fechaExpiracionDate
+    if (isNaN(fechaExpiracionDate.getTime())) {
+      throw new Error("La fecha de expiración no es válida");
     }
-  });
 
-  await LibroRepository.setEjemplarDisponibilidad(ejemplarId, 'reservado');
-
-  return {
-    id: nuevoPrestamo._id,
-    estado: nuevoPrestamo.estado,
-    fechaReserva: nuevoPrestamo.reserva.fechaReserva,
-    fechaExpiracion: nuevoPrestamo.reserva.fechaExpiracion,
-    mensaje: "Reserva creada exitosamente",
-    ejemplar: {
-      id: ejemplarId,
-      cdu: ejemplar.cdu
+    // Validaciones básicas antes de continuar
+    if (!libroId || !usuarioId) {
+      throw new Error("libroId y usuarioId son requeridos para crear una reserva");
     }
-  };
+    if (!fechaExpiracion) {
+      throw new Error("La fecha de expiración es requerida para la reserva");
+    }
+
+    // 🔵 CAMBIO: En lugar de crear préstamo normal, crear uno especial para reserva
+    const libro = await LibroRepository.findById(libroId);
+    if (!libro) {
+      throw new Error("Libro no encontrado");
+    }
+
+    // Verificar que hay ejemplares disponibles
+    const ejemplaresDisponibles = await LibroRepository.findAvailableEjemplares(libroId);
+    if (ejemplaresDisponibles.length === 0) {
+      throw new Error("No hay ejemplares disponibles para reservar");
+    }
+
+    const ejemplar = ejemplaresDisponibles[0];
+    const ejemplarId = ejemplar._id;
+
+    // Crear préstamo como reserva
+    const nuevoPrestamo = await PrestamoRepository.crear({
+      libroId,
+      ejemplarId,
+      usuarioId,
+      estado: 'reserva',
+      tipoPrestamo: tipoPrestamo,
+      reserva: {
+        fechaReserva: new Date(),
+        fechaExpiracion: fechaExpiracionDate
+      },
+      fechaPrestamo: null, // No tiene fecha de préstamo aún
+      fechaDevolucionEstimada: null // No tiene fecha de devolución aún
+    });
+
+    // 🔵 CAMBIO: Actualizar estado del ejemplar a "reservado"
+    await LibroRepository.setEjemplarDisponibilidad(ejemplarId, 'reservado');
+
+    return {
+      id: nuevoPrestamo._id,
+      mensaje: "Reserva creada exitosamente",
+      fechaReserva: nuevoPrestamo.reserva.fechaReserva,
+      fechaExpiracion: nuevoPrestamo.reserva.fechaExpiracion,
+      ejemplar: {
+        id: ejemplarId,
+        cdu: ejemplar.cdu
+      }
+    };
 }
 
   // Activar una reserva y convertirla en préstamo
@@ -799,6 +790,24 @@ async obtenerTodasLasReservas() {
     mensaje: "Reserva activada y convertida en préstamo exitosamente"
   };
 }
+
+async liberarReservasExpiradas() {
+  const ahora = new Date();
+
+  const reservasExpiradas = await PrestamoRepository.obtenerReservasExpiradas();
+
+  for (const reserva of reservasExpiradas) {
+    // Liberar ejemplar
+    await LibroRepository.setEjemplarDisponibilidad(
+      reserva.ejemplarId,
+      'disponible'
+    );
+
+    // Marcar reserva como expirada
+    await PrestamoRepository.marcarReservaComoExpirada(reserva._id);
+  }
+}
+
 
   // Cancelar una reserva existente
   async cancelarReserva(prestamoId) {
