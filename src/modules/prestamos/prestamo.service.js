@@ -713,18 +713,19 @@ async obtenerTodasLasReservas() {
 
     // Crear préstamo como reserva
     const nuevoPrestamo = await PrestamoRepository.crear({
-      libroId,
-      ejemplarId,
-      usuarioId,
-      estado: 'reserva',
-      tipoPrestamo: tipoPrestamo,
-      reserva: {
-        fechaReserva: new Date(),
-        fechaExpiracion: fechaExpiracionDate
-      },
-      fechaPrestamo: null, // No tiene fecha de préstamo aún
-      fechaDevolucionEstimada: null // No tiene fecha de devolución aún
-    });
+  libroId,
+  ejemplarId,
+  usuarioId,
+  estado: 'reserva',
+  tipoPrestamo: tipoPrestamo,
+  reserva: {
+    fechaReserva: new Date(),
+    fechaExpiracion: fechaExpiracionDate
+  },
+  // 🔥 OBLIGATORIOS POR EL SCHEMA
+  fechaPrestamo: new Date(),
+  fechaDevolucionEstimada: fechaExpiracionDate
+});
 
     // 🔵 CAMBIO: Actualizar estado del ejemplar a "reservado"
     await LibroRepository.setEjemplarDisponibilidad(ejemplarId, 'reservado');
