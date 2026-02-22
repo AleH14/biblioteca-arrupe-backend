@@ -82,23 +82,23 @@ const LibroRepository = {
     },
 
     setEjemplarDisponibilidad: async (ejemplarId, nuevoEstado) => {
-    // 1. Buscar el libro al que pertenece el ejemplar
+        // 1. Buscar el libro al que pertenece el ejemplar
         const libro = await Libro.findOne({ "ejemplares._id": ejemplarId });
         if (!libro) return null;
 
-           // 2. Actualizar estado del ejemplar dentro del array
- const libroActualizado = await Libro.findOneAndUpdate(
+        // 2. Actualizar estado del ejemplar dentro del array
+        const libroActualizado = await Libro.findOneAndUpdate(
             { _id: libro._id, "ejemplares._id": ejemplarId },
             { $set: { "ejemplares.$.estado": nuevoEstado } },
             { new: true }
         );
 
-         // 3. Comprobar si quedan ejemplares disponibles
-   const ejemplaresDisponibles = libroActualizado.ejemplares.some(
+        // 3. Comprobar si quedan ejemplares disponibles
+        const ejemplaresDisponibles = libroActualizado.ejemplares.some(
             e => e.estado === "disponible"
         );
 
-    // 4. Actualizar disponibilidad del libro
+        // 4. Actualizar disponibilidad del libro
         await LibroRepository.setLibroDisponibilidad(libro._id, ejemplaresDisponibles);
 
         return libroActualizado;
