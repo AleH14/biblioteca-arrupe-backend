@@ -279,20 +279,18 @@ exports.obtenerDetallesReserva = async (req, res, next) => {
 
 // Crear una nueva reserva para un libro
 exports.reservarLibro = async (req, res, next) => {
-  try {
-
-    const { usuarioId } = req.body;
-
-    if (!usuarioId) {
-      return res.status(400).json({
+   try {
+    // Verificar que el usuario está autenticado y tiene un ID válido
+    if (!req.user || !req.user.sub) {
+      return res.status(401).json({
         success: false,
-        message: "usuarioId es requerido"
+        message: "Usuario no autenticado"
       });
     }
 
     const reserva = await PrestamoService.reservarLibro(
       req.body,
-      usuarioId
+      req.user.sub
     );
 
     res.status(201).json({

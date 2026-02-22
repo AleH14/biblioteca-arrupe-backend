@@ -800,19 +800,25 @@ async liberarReservasExpiradas() {
   const ahora = new Date();
 
   const reservasExpiradas = await PrestamoRepository.obtenerReservasExpiradas();
+  if (!reservasExpiradas || reservasExpiradas.length === 0) {
+      return; // Salir rápido si no hay nada que hacer
+    }
 
-  for (const reserva of reservasExpiradas) {
-    // Liberar ejemplar
-    await LibroRepository.setEjemplarDisponibilidad(
-      reserva.ejemplarId,
-      'disponible'
+    // Ejecutar TODAS las operaciones en PARALELO
+    await Promise.all(
+      reservasExpiradas.map((reserva) =>
+        Promise.all([
+          //libera ejemplar
+          LibroRepository.setEjemplarDisponibilidad(
+            reserva.ejemplarId,
+            'disponible'
+          ),
+          //marca reserva como expirada
+          PrestamoRepository.marcarReservaComoExpirada(reserva._id),
+        ])
+      )
     );
-
-    // Marcar reserva como expirada
-    await PrestamoRepository.marcarReservaComoExpirada(reserva._id);
-  }
 }
-
 
   // Cancelar una reserva existente
   async cancelarReserva(prestamoId) {

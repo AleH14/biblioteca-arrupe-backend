@@ -14,14 +14,14 @@ const reservaSchema = new mongoose.Schema({
 
 const prestamoSchema = new mongoose.Schema({
 
-  // 🔵 ID del libro al que pertenece el ejemplar
+  // ID del libro al que pertenece el ejemplar
   libroId: { 
     type: mongoose.Schema.Types.ObjectId,
     ref: "Libro",
     required: true
   },
 
-  // 🔵 ID del ejemplar (subdocumento dentro de Libro)
+  // ID del ejemplar (subdocumento dentro de Libro)
   ejemplarId: { 
     type: mongoose.Schema.Types.ObjectId,
     required: true
@@ -35,7 +35,7 @@ const prestamoSchema = new mongoose.Schema({
 
   estado: { 
     type: String, 
-    enum: ["activo", "reserva", "cerrado", "atrasado", "cancelado"], 
+    enum: ["activo", "reserva", "cerrado", "atrasado", "cancelado", "expirada"], 
     default: "activo" 
   },
 
