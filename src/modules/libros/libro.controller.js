@@ -6,7 +6,6 @@ const PrestamoService = require("../prestamos/prestamo.service");
 
 exports.getLibros = async (req, res, next) => {
   try {
-    console.log("🔥 GET LIBROS EJECUTADO");
 
     // 🔥 LIBERAR RESERVAS VENCIDAS
     await PrestamoService.liberarReservasExpiradas();
