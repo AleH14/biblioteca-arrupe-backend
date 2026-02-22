@@ -50,7 +50,8 @@ async buscarPorNombreAlumno(nombre) {
         id: prestamo.libroId._id,
         titulo: prestamo.libroId.titulo,
         autor: prestamo.libroId.autor,
-        isbn: prestamo.libroId.isbn
+        isbn: prestamo.libroId.isbn,
+        imagenURL: prestamo.libroId.imagenURL
       },
       ejemplar: {
         id: prestamo.ejemplarId,
@@ -123,6 +124,7 @@ async obtenerPorClasificacion(clasificacion) {
           titulo: libro.titulo,
           autor: libro.autor,
           isbn: libro.isbn,
+          imagenURL: libro.imagenURL
         },
         ejemplar: {
           id: prestamo.ejemplarId,
@@ -183,6 +185,7 @@ async obtenerPorClasificacion(clasificacion) {
           titulo: libro.titulo,
           autor: libro.autor,
           isbn: libro.isbn,
+          imagenURL: libro.imagenURL
         },
         ejemplar: {
             id: prestamo.ejemplarId,
@@ -594,7 +597,8 @@ async obtenerPorClasificacion(clasificacion) {
         id: r.libroId._id,
         titulo: r.libroId.titulo,
         autor: r.libroId.autor,
-        isbn: r.libroId.isbn
+        isbn: r.libroId.isbn,
+        imagenURL: r.libroId.imagenURL
       },
       ejemplar: {
         id: ejemplar._id,
