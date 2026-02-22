@@ -41,8 +41,8 @@ const prestamoSchema = new mongoose.Schema({
 
   reserva: { type: reservaSchema, default: null },
 
-  fechaPrestamo: { type: Date, required: true, default: Date.now },
-  fechaDevolucionEstimada: { type: Date, required: true },
+  fechaPrestamo: { type: Date, required: false, default: Date.now },
+  fechaDevolucionEstimada: { type: Date, required: false },
   fechaDevolucionReal: { type: Date, default: null },
 
   notificaciones: { 

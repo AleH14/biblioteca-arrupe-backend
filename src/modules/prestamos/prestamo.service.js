@@ -726,9 +726,9 @@ async obtenerTodasLasReservas() {
     fechaReserva: new Date(),
     fechaExpiracion: fechaExpiracionDate
   },
-  // 🔥 OBLIGATORIOS POR EL SCHEMA
-  fechaPrestamo: new Date(),
-  fechaDevolucionEstimada: fechaExpiracionDate
+  // nulos
+  fechaPrestamo: null,
+  fechaDevolucionEstimada: null
 });
 
     // 🔵 CAMBIO: Actualizar estado del ejemplar a "reservado"
