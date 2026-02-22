@@ -306,9 +306,6 @@ exports.reservarLibro = async (req, res, next) => {
   }
 };
 
-
-
-
 // Activar una reserva y convertirla en préstamo
 exports.activarReserva = async (req, res, next) => {
    try {
