@@ -1,15 +1,33 @@
 // src/modules/libros/libro.controller.js
 const LibroService = require("./libro.service");
+const PrestamoService = require("../prestamos/prestamo.service");
+
+const RESERVAS_CLEANUP_INTERVAL_MS = 5 * 60 * 1000; // 5 minutos
+let lastReservasCleanup = 0;
 
 exports.getLibros = async (req, res, next) => {
   try {
+
+    // LIBERAR RESERVAS VENCIDAS
+     const now = Date.now();
+    if (now - lastReservasCleanup > RESERVAS_CLEANUP_INTERVAL_MS) {
+      lastReservasCleanup = now;
+
+      PrestamoService.liberarReservasExpiradas()
+    .catch(err => {
+      console.error("Error liberando reservas vencidas:", err);
+    });
+    }
+
     const filtros = req.query;
     const libros = await LibroService.getLibros(filtros);
-    res.json({success: true, data: libros});
+
+    res.json({ success: true, data: libros });
   } catch (err) {
     next(err);
   }
 };
+
 
 exports.getLibroById = async (req, res, next) => {
   try {

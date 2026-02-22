@@ -50,7 +50,8 @@ async buscarPorNombreAlumno(nombre) {
         id: prestamo.libroId._id,
         titulo: prestamo.libroId.titulo,
         autor: prestamo.libroId.autor,
-        isbn: prestamo.libroId.isbn
+        isbn: prestamo.libroId.isbn,
+        imagenURL: prestamo.libroId.imagenURL
       },
       ejemplar: {
         id: prestamo.ejemplarId,
@@ -123,6 +124,7 @@ async obtenerPorClasificacion(clasificacion) {
           titulo: libro.titulo,
           autor: libro.autor,
           isbn: libro.isbn,
+          imagenURL: libro.imagenURL
         },
         ejemplar: {
           id: prestamo.ejemplarId,
@@ -183,6 +185,7 @@ async obtenerPorClasificacion(clasificacion) {
           titulo: libro.titulo,
           autor: libro.autor,
           isbn: libro.isbn,
+          imagenURL: libro.imagenURL
         },
         ejemplar: {
             id: prestamo.ejemplarId,
@@ -594,7 +597,8 @@ async obtenerPorClasificacion(clasificacion) {
         id: r.libroId._id,
         titulo: r.libroId.titulo,
         autor: r.libroId.autor,
-        isbn: r.libroId.isbn
+        isbn: r.libroId.isbn,
+        imagenURL: r.libroId.imagenURL
       },
       ejemplar: {
         id: ejemplar._id,
@@ -713,18 +717,19 @@ async obtenerTodasLasReservas() {
 
     // Crear préstamo como reserva
     const nuevoPrestamo = await PrestamoRepository.crear({
-      libroId,
-      ejemplarId,
-      usuarioId,
-      estado: 'reserva',
-      tipoPrestamo: tipoPrestamo,
-      reserva: {
-        fechaReserva: new Date(),
-        fechaExpiracion: fechaExpiracionDate
-      },
-      fechaPrestamo: null, // No tiene fecha de préstamo aún
-      fechaDevolucionEstimada: null // No tiene fecha de devolución aún
-    });
+  libroId,
+  ejemplarId,
+  usuarioId,
+  estado: 'reserva',
+  tipoPrestamo: tipoPrestamo,
+  reserva: {
+    fechaReserva: new Date(),
+    fechaExpiracion: fechaExpiracionDate
+  },
+  // nulos
+  fechaPrestamo: null,
+  fechaDevolucionEstimada: null
+});
 
     // 🔵 CAMBIO: Actualizar estado del ejemplar a "reservado"
     await LibroRepository.setEjemplarDisponibilidad(ejemplarId, 'reservado');
@@ -789,6 +794,30 @@ async obtenerTodasLasReservas() {
     fechaDevolucionEstimada: prestamoActivado.fechaDevolucionEstimada,
     mensaje: "Reserva activada y convertida en préstamo exitosamente"
   };
+}
+
+async liberarReservasExpiradas() {
+  const ahora = new Date();
+
+  const reservasExpiradas = await PrestamoRepository.obtenerReservasExpiradas();
+  if (!reservasExpiradas || reservasExpiradas.length === 0) {
+      return; // Salir rápido si no hay nada que hacer
+    }
+
+    // Ejecutar TODAS las operaciones en PARALELO
+    await Promise.all(
+      reservasExpiradas.map((reserva) =>
+        Promise.all([
+          //libera ejemplar
+          LibroRepository.setEjemplarDisponibilidad(
+            reserva.ejemplarId,
+            'disponible'
+          ),
+          //marca reserva como expirada
+          PrestamoRepository.marcarReservaComoExpirada(reserva._id),
+        ])
+      )
+    );
 }
 
   // Cancelar una reserva existente
